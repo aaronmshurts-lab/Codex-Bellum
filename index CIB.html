@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Codex Imperiator Bellum</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#07070d;--surface:#0d0d18;--card:#111120;--card-hover:#181828;
+      --gold:#e8c96a;--gold-bright:#f5d980;--gold-dim:rgba(232,201,106,.18);--gold-glow:rgba(232,201,106,.08);
+      --text:#e6dfd4;--text-muted:#8a8290;--border:#1e1c2e;--border-gold:rgba(232,201,106,.38);
+      /* war-layer accents: iron & blood, distinct from the Librorum's book-status hues */
+      --iron:#7d8794;--iron-bg:rgba(125,135,148,.12);
+      --blood:#9a3b3b;--blood-bright:#c15a5a;--blood-bg:rgba(154,59,59,.13);
+      --weapon:#c15a5a;--unit:#7d8794;
+      --radius:3px;
+    }
+    html{scroll-behavior:smooth}
+    body{font-family:'EB Garamond',Georgia,serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:1000;opacity:.022;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+    .wrap{max-width:1180px;margin:0 auto;padding:0 1.5rem}
+
+    /* ── TOP BAR ── */
+    .topbar{border-bottom:1px solid var(--border);background:rgba(7,7,13,.85);backdrop-filter:blur(8px);
+      position:sticky;top:0;z-index:100}
+    .topbar-inner{max-width:1180px;margin:0 auto;padding:.9rem 1.5rem;display:flex;align-items:center;gap:1rem}
+    .brand{display:flex;align-items:center;gap:.7rem;cursor:pointer;background:none;border:none;text-align:left}
+    .brand .mark{color:var(--gold-bright);filter:drop-shadow(0 0 10px rgba(232,201,106,.45));line-height:0;display:flex}
+    .brand .mark .aquila-svg{width:44px;height:auto}
+    .brand .txt h1{font-family:'Cinzel',serif;font-size:.92rem;font-weight:700;letter-spacing:.16em;
+      color:var(--gold-bright);text-transform:uppercase}
+    .brand .txt p{font-size:.64rem;color:var(--text-muted);letter-spacing:.12em;text-transform:uppercase}
+    .topbar-spacer{flex:1}
+    .crumb{font-family:'Cinzel',serif;font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--text-muted)}
+    .crumb b{color:var(--gold)}
+
+    /* ── HUB ── */
+    .hub-hero{text-align:center;padding:4.5rem 1.5rem 3rem;
+      background:radial-gradient(ellipse 60% 45% at 50% 0%,rgba(232,201,106,.07) 0%,transparent 65%),
+                 radial-gradient(ellipse 45% 40% at 50% 100%,rgba(154,59,59,.05) 0%,transparent 60%)}
+    .hub-hero .aquila{color:var(--gold-bright);display:flex;justify-content:center;margin-bottom:1.2rem;
+      filter:drop-shadow(0 0 16px rgba(232,201,106,.5))}
+    .hub-hero .aquila .aquila-svg{width:260px;height:auto}
+    @media(max-width:640px){.hub-hero .aquila .aquila-svg{width:190px}}
+    .hub-hero h2{font-family:'Cinzel',serif;font-size:2.15rem;font-weight:900;letter-spacing:.1em;
+      color:var(--gold-bright);text-transform:uppercase;line-height:1.15}
+    .hub-hero .sub{font-style:italic;color:var(--text-muted);font-size:1.05rem;margin-top:.9rem;letter-spacing:.02em}
+    .hub-rule{display:flex;align-items:center;gap:1rem;max-width:340px;margin:1.6rem auto 0;opacity:.6}
+    .hub-rule::before,.hub-rule::after{content:'';flex:1;height:1px;background:var(--border-gold)}
+    .hub-rule span{font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold)}
+
+    .spokes{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.2rem;padding:2rem 0 3rem}
+    .spoke{position:relative;display:block;background:var(--card);border:1px solid var(--border);
+      padding:1.8rem 1.6rem;text-decoration:none;color:inherit;cursor:pointer;text-align:left;width:100%;
+      transition:border-color .22s,background .22s,transform .1s;border-radius:var(--radius);overflow:hidden}
+    .spoke:hover{border-color:var(--border-gold);background:var(--card-hover)}
+    .spoke:active{transform:scale(.995)}
+    .spoke::after{content:'';position:absolute;top:0;left:0;width:2px;height:100%;background:var(--gold);opacity:0;transition:opacity .22s;pointer-events:none}
+    .spoke:hover::after{opacity:.7}
+    .spoke .ico{font-size:1.7rem;color:var(--gold-bright);display:block;margin-bottom:.9rem;line-height:1}
+    .spoke .la{font-family:'Cinzel',serif;font-size:1.02rem;font-weight:700;letter-spacing:.08em;color:var(--gold-bright);text-transform:uppercase}
+    .spoke .en{font-size:.72rem;color:var(--text-muted);letter-spacing:.14em;text-transform:uppercase;margin-top:.15rem}
+    .spoke .desc{font-size:.95rem;color:var(--text);margin-top:.8rem;line-height:1.5}
+    .spoke > *{pointer-events:none}
+    .spoke.locked{cursor:default;opacity:.5}
+    .spoke.locked:hover{border-color:var(--border);background:var(--card)}
+    .spoke.locked:hover::after{opacity:0}
+    .spoke .badge{position:absolute;top:1rem;right:1rem;font-family:'Cinzel',serif;font-size:.54rem;
+      letter-spacing:.16em;text-transform:uppercase;padding:.22rem .5rem;border-radius:2px;pointer-events:none}
+    .badge.live{color:var(--gold);border:1px solid var(--border-gold);background:var(--gold-glow)}
+    .badge.ext{color:var(--iron);border:1px solid rgba(125,135,148,.3);background:var(--iron-bg)}
+    .badge.soon{color:var(--text-muted);border:1px solid var(--border)}
+    .hub-foot{text-align:center;padding:1.5rem 0 3rem;color:var(--text-muted);font-size:.78rem;letter-spacing:.08em}
+    .hub-foot .ver{font-family:'Cinzel',serif;letter-spacing:.14em;text-transform:uppercase;font-size:.62rem}
+    .hub-foot .ver b{color:var(--gold)}
+
+    /* ── VIEW SWITCH ── */
+    .view{display:none}
+    .view.active{display:block}
+
+    /* ── IURA BELLI ── */
+    .spoke-head{padding:2.8rem 0 1.4rem;text-align:center;
+      background:radial-gradient(ellipse 55% 45% at 50% 0%,rgba(232,201,106,.06) 0%,transparent 65%)}
+    .spoke-head .eyebrow{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);opacity:.8}
+    .spoke-head h2{font-family:'Cinzel',serif;font-size:1.85rem;font-weight:900;letter-spacing:.12em;color:var(--gold-bright);text-transform:uppercase;margin-top:.5rem}
+    .spoke-head .sub{font-style:italic;color:var(--text-muted);margin-top:.5rem}
+
+    .controls{position:sticky;top:57px;z-index:50;background:rgba(7,7,13,.9);backdrop-filter:blur(8px);
+      border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:1rem 0;margin-bottom:1.5rem}
+    .controls-inner{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center}
+    .search{flex:1;min-width:220px;position:relative}
+    .search input{width:100%;padding:.7rem 1rem .7rem 2.4rem;background:var(--surface);border:1px solid var(--border);
+      color:var(--text);font-family:'EB Garamond',serif;font-size:1rem;outline:none;border-radius:var(--radius);
+      transition:border-color .2s,box-shadow .2s}
+    .search input:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-glow)}
+    .search .si{position:absolute;left:.85rem;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:.95rem}
+    .segs{display:flex;gap:.35rem}
+    .seg{font-family:'Cinzel',serif;font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;
+      padding:.55rem .9rem;background:var(--surface);border:1px solid var(--border);color:var(--text-muted);
+      cursor:pointer;border-radius:var(--radius);transition:all .18s;white-space:nowrap}
+    .seg:hover{color:var(--text);border-color:var(--border-gold)}
+    .seg.active{color:var(--gold-bright);border-color:var(--border-gold);background:var(--gold-glow)}
+
+    .tabs{display:flex;gap:.4rem;border-bottom:1px solid var(--border);margin-bottom:1.5rem}
+    .tab{font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
+      padding:.75rem 1.1rem;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;
+      color:var(--text-muted);cursor:pointer;transition:color .2s,border-color .2s}
+    .tab:hover{color:var(--text)}
+    .tab.active{color:var(--gold-bright);border-bottom-color:var(--gold)}
+    .tab .ct{font-size:.62rem;opacity:.6;margin-left:.35rem}
+
+    .count{font-size:.78rem;color:var(--text-muted);letter-spacing:.05em;margin-bottom:1rem;font-style:italic}
+
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem;padding-bottom:3rem}
+    .entry{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;
+      transition:border-color .2s,background .2s}
+    .entry:hover{border-color:var(--border-gold)}
+    .entry-head{padding:1.1rem 1.2rem;cursor:pointer;display:flex;align-items:flex-start;gap:.8rem}
+    .entry-head:hover{background:var(--card-hover)}
+    .entry-name{font-family:'Cinzel',serif;font-size:.98rem;font-weight:600;letter-spacing:.03em;color:var(--gold-bright);flex:1;line-height:1.3}
+    .entry-ref{font-family:'Cinzel',serif;font-size:.62rem;color:var(--text-muted);letter-spacing:.08em;
+      padding:.2rem .45rem;border:1px solid var(--border);border-radius:2px;white-space:nowrap;margin-top:.1rem}
+    .pill{font-family:'Cinzel',serif;font-size:.54rem;letter-spacing:.12em;text-transform:uppercase;
+      padding:.2rem .5rem;border-radius:2px;white-space:nowrap;align-self:flex-start;margin-top:.15rem}
+    .pill.weapon{color:var(--weapon);border:1px solid rgba(193,90,90,.4);background:var(--blood-bg)}
+    .pill.unit{color:var(--iron);border:1px solid rgba(125,135,148,.4);background:var(--iron-bg)}
+    .pill.cp{color:var(--gold);border:1px solid var(--border-gold);background:var(--gold-glow)}
+    .entry-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+    .entry.open .entry-body{max-height:1400px}
+    .entry-body-inner{padding:0 1.2rem 1.2rem;border-top:1px solid var(--border);margin-top:0}
+    .entry-body-inner p{padding-top:1rem;font-size:.94rem;line-height:1.65;color:var(--text);white-space:pre-wrap}
+    .strat-meta{display:grid;gap:.55rem;padding-top:1rem}
+    .strat-row{display:grid;grid-template-columns:auto 1fr;gap:.7rem;align-items:baseline}
+    .strat-label{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);white-space:nowrap}
+    .strat-val{font-size:.92rem;line-height:1.55;color:var(--text)}
+    .strat-val.restr{color:var(--blood-bright)}
+    .expand-hint{font-size:.7rem;color:var(--text-muted);letter-spacing:.1em;margin-top:.15rem}
+
+    .state{text-align:center;padding:4rem 1.5rem;color:var(--text-muted)}
+    .state .ico{font-size:2.4rem;color:var(--gold-dim);display:block;margin-bottom:1rem}
+    .state.err .ico{color:var(--blood-bright)}
+    .spinner{width:34px;height:34px;border:2px solid var(--border);border-top-color:var(--gold);
+      border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .errata-note{background:var(--blood-bg);border:1px solid rgba(154,59,59,.35);border-radius:var(--radius);
+      padding:1rem 1.2rem;margin-bottom:1.5rem;display:flex;gap:.8rem;align-items:flex-start}
+    .errata-note .ei{color:var(--blood-bright);font-size:1.1rem;line-height:1}
+    .errata-note .et{font-size:.9rem;color:var(--text);line-height:1.55}
+    .errata-note .et b{color:var(--blood-bright);font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:.2rem}
+
+    @media(max-width:640px){
+      .hub-hero h2{font-size:1.6rem}
+      .spoke-head h2{font-size:1.4rem}
+      .controls-inner{flex-direction:column;align-items:stretch}
+      .segs{justify-content:center}
+      .grid{grid-template-columns:1fr}
+      .crumb{display:none}
+    }
+    @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <button class="brand" onclick="goHub()">
+        <span class="mark"><svg class="aquila-svg" viewBox="0 0 3333.000000 1216.000000" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="currentColor" fill-rule="evenodd"><g transform="translate(0.000000,1216.000000) scale(0.100000,-0.100000)"><path d="M7 12146 c4 -8 231 -309 503 -670 422 -558 499 -656 520 -656 14 0
+2068 99 4565 220 2497 121 4545 219 4552 218 6 -2 -28 -59 -76 -128 l-88 -125
+-49 -7 c-27 -4 -1923 -168 -4214 -363 -2291 -196 -4177 -359 -4193 -363 -26
+-7 -9 -27 514 -602 297 -327 548 -596 557 -598 9 -1 1628 281 3597 627 1968
+347 3581 628 3583 626 5 -4 -45 -295 -50 -300 -2 -1 -1458 -366 -3236 -810
+-1778 -444 -3232 -810 -3230 -814 2 -4 272 -262 602 -575 482 -458 602 -567
+620 -563 11 2 1209 455 2661 1005 1451 551 2641 999 2643 997 7 -7 72 -248 72
+-265 -1 -10 -794 -408 -2350 -1180 -1292 -641 -2348 -1169 -2346 -1175 3 -10
+1276 -954 1288 -955 3 0 833 583 1845 1296 1011 713 1843 1298 1849 1301 6 2
+18 -7 27 -21 9 -14 41 -63 72 -110 l55 -85 -1545 -1458 c-850 -801 -1544
+-1461 -1543 -1465 2 -5 257 -148 568 -318 526 -287 566 -307 581 -292 9 9 560
+661 1224 1447 664 787 1211 1431 1214 1432 12 5 156 -84 154 -95 -1 -5 -415
+-690 -919 -1522 -504 -831 -914 -1513 -911 -1516 11 -11 1220 -185 1227 -177
+5 4 345 679 756 1499 l749 1490 61 -13 61 -14 -73 -232 c-41 -128 -237 -747
+-438 -1377 -200 -630 -362 -1146 -361 -1148 2 -2 266 150 588 338 l584 341
+137 552 c75 304 189 767 253 1029 l118 477 50 11 c28 7 58 14 68 17 17 4 18
+-28 11 -776 -4 -430 -4 -781 -1 -781 5 0 342 367 750 817 l137 152 -35 378
+c-19 208 -37 397 -40 419 l-6 41 67 42 c36 23 67 41 69 39 1 -2 39 -141 86
+-310 46 -170 87 -308 90 -308 4 0 65 77 135 172 71 95 197 261 281 370 83 108
+154 202 158 208 4 6 -15 35 -43 63 -65 70 -80 114 -57 173 39 104 183 136 256
+58 35 -38 30 -103 -20 -254 -120 -358 -423 -858 -785 -1295 -98 -119 -389
+-418 -475 -489 -43 -35 -44 -37 -25 -50 10 -8 262 -194 559 -415 356 -264 542
+-396 546 -388 4 7 314 790 689 1740 l681 1728 -165 172 c-91 95 -273 282 -405
+417 -233 239 -240 245 -262 231 -753 -455 -1450 -721 -2089 -796 -144 -17
+-447 -20 -570 -5 -455 55 -829 241 -1059 526 -461 571 -376 1406 217 2114 249
+297 642 607 1017 801 l100 52 2 119 1 118 -6359 0 c-5456 0 -6359 -2 -6352
+-14z"/><path d="M20633 12042 l2 -118 115 -62 c799 -430 1334 -1062 1480 -1747 27
+-127 37 -366 21 -488 -27 -198 -91 -381 -192 -544 -67 -107 -230 -279 -337
+-356 -222 -159 -511 -263 -833 -298 -148 -16 -500 -6 -664 19 -561 87 -1166
+315 -1804 682 -106 61 -197 109 -200 108 -16 -7 -801 -819 -801 -828 0 -13
+1360 -3463 1369 -3471 6 -7 1103 803 1108 818 2 6 -46 54 -106 107 -465 413
+-1005 1191 -1180 1700 -47 137 -59 203 -41 245 35 87 170 92 244 11 30 -33 36
+-48 36 -83 0 -49 -37 -116 -88 -159 l-32 -27 112 -144 c62 -80 192 -251 288
+-380 96 -129 179 -234 184 -233 5 1 46 135 91 297 45 162 83 299 86 306 2 7
+26 -2 66 -25 50 -29 63 -42 63 -62 0 -14 -16 -204 -36 -422 l-37 -397 69 -78
+c213 -238 807 -888 815 -891 5 -2 6 322 2 778 -6 768 -6 782 13 777 10 -4 38
+-11 62 -16 24 -5 46 -12 49 -15 3 -3 120 -465 258 -1027 139 -561 256 -1024
+261 -1029 23 -21 1159 -679 1162 -672 1 5 -193 624 -432 1377 -308 967 -432
+1371 -424 1376 14 9 108 23 112 18 2 -2 340 -674 751 -1494 412 -819 749
+-1491 751 -1493 3 -5 1225 175 1230 181 3 2 -410 687 -916 1521 -506 835 -920
+1520 -920 1524 0 5 114 73 152 90 3 2 545 -635 1204 -1415 660 -780 1212
+-1432 1229 -1449 l30 -32 568 311 c312 171 566 314 565 318 -2 4 -696 661
+-1543 1460 -847 798 -1541 1455 -1543 1458 -3 8 135 221 143 221 3 0 829 -580
+1835 -1289 1005 -710 1837 -1295 1847 -1302 17 -10 94 43 667 466 356 263 643
+482 639 486 -8 8 -2848 1420 -4130 2054 l-572 283 36 138 c20 77 37 140 38
+142 2 2 1192 -448 2646 -999 1454 -552 2654 -1003 2667 -1003 28 -1 1232 1136
+1211 1143 -8 3 -1465 367 -3239 810 l-3224 806 -27 153 c-14 83 -25 152 -24
+152 1 0 1613 -283 3583 -630 1969 -346 3588 -630 3596 -630 13 0 1085 1166
+1094 1190 2 5 -12 11 -30 14 -18 3 -1903 166 -4188 361 -2285 195 -4178 358
+-4205 361 l-51 6 -87 126 c-48 69 -85 127 -83 129 2 2 2057 -96 4566 -217
+2509 -122 4567 -219 4574 -217 18 7 996 1304 996 1322 0 13 -645 15 -6350 15
+l-6350 0 3 -118z"/><path d="M18332 11229 c-13 -5 -42 -25 -65 -44 -22 -19 -54 -37 -71 -40 -17
+-3 -274 -7 -571 -9 -297 -2 -553 -8 -570 -13 -38 -12 -43 -37 -11 -58 14 -9
+301 -101 638 -205 337 -103 626 -194 641 -201 16 -7 34 -24 42 -38 7 -15 46
+-194 86 -399 40 -205 77 -371 81 -370 18 6 1112 915 1140 947 30 34 30 37 25
+110 -7 94 -21 143 -51 177 l-22 27 -595 63 c-617 66 -659 69 -697 53z"/><path d="M13728 11113 c-30 -35 -79 -145 -85 -192 -4 -33 -1 -57 11 -78 17
+-34 1178 -1012 1183 -997 1 5 34 169 74 364 39 195 77 369 84 387 7 17 24 38
+37 47 12 8 149 51 303 96 544 158 980 292 998 308 25 23 22 57 -8 70 -19 9
+-355 12 -1304 12 -1205 0 -1279 -1 -1293 -17z m773 -276 c89 -59 86 -172 -4
+-227 -87 -53 -200 12 -200 115 0 105 118 170 204 112z"/><path d="M17730 10663 c-101 -67 -883 -649 -887 -659 -5 -14 499 -1375 507
+-1371 5 2 393 403 825 851 l210 219 -2 81 c-3 113 -122 707 -149 743 -23 30
+-60 44 -282 109 -171 49 -187 51 -222 27z"/><path d="M15350 10609 c-203 -62 -206 -63 -224 -91 -8 -13 -26 -90 -41 -173
+-14 -82 -46 -252 -71 -377 -39 -199 -43 -231 -32 -257 19 -45 1040 -1076 1049
+-1059 27 49 479 1289 479 1315 0 19 -9 42 -22 57 -23 24 -372 284 -697 518
+l-163 118 -57 -1 c-37 0 -113 -18 -221 -50z"/><path d="M13390 10525 c-173 -68 -352 -138 -397 -155 -46 -17 -83 -37 -83 -43
+1 -21 368 -981 376 -984 9 -3 34 54 136 317 60 156 88 200 137 219 14 5 195
+53 401 106 206 53 379 100 383 105 8 7 -611 552 -631 556 -4 1 -149 -54 -322
+-121z"/><path d="M19603 10618 c-44 -26 -602 -503 -595 -509 4 -4 185 -53 402 -109
+217 -56 407 -109 422 -118 35 -20 42 -36 146 -300 49 -123 92 -223 98 -221 8
+2 387 990 381 995 -14 14 -754 268 -787 271 -25 2 -54 -2 -67 -9z"/><path d="M15680 7292 c-547 -1461 -995 -2666 -995 -2677 0 -12 166 -209 415
+-493 228 -261 416 -477 418 -481 1 -4 -89 -223 -201 -487 -112 -263 -230 -543
+-262 -622 l-58 -143 30 -32 c16 -18 83 -90 148 -162 171 -188 154 -172 165
+-155 14 22 142 324 260 615 56 138 143 346 192 464 l91 213 45 -45 46 -46
+-252 -674 c-139 -371 -252 -680 -252 -687 0 -17 362 -412 370 -403 4 4 118
+328 254 718 137 391 251 715 255 721 4 8 21 -1 49 -25 l43 -37 -226 -765
+c-124 -420 -227 -769 -230 -775 -3 -11 682 -749 695 -749 11 0 720 728 720
+739 0 6 -92 357 -205 781 l-205 769 42 37 43 37 12 -26 c7 -15 67 -193 133
+-397 224 -685 332 -1010 339 -1018 4 -4 100 89 214 206 l206 214 -250 657
+c-137 362 -249 664 -249 670 0 7 19 31 43 54 l43 42 278 -650 c153 -357 282
+-650 285 -650 16 0 316 331 315 348 0 9 -121 297 -268 639 l-268 622 421 480
+c231 264 421 487 421 494 0 8 -455 1188 -1011 2623 -556 1435 -1020 2633
+-1031 2662 -11 28 -22 52 -26 52 -4 0 -455 -1196 -1002 -2658z"/><path d="M18400 3928 c-162 -176 -296 -325 -298 -332 -1 -7 167 -273 374 -591
+207 -319 380 -588 385 -597 6 -12 2 -25 -16 -46 -14 -17 -25 -32 -25 -35 0 -3
+27 -52 60 -108 l59 -103 -41 -45 c-23 -25 -120 -130 -215 -232 l-172 -186
+-196 -23 c-107 -13 -201 -27 -208 -32 -8 -5 25 -45 106 -125 l117 -119 -55
+-128 c-31 -71 -54 -132 -53 -137 2 -4 85 26 185 68 l183 76 411 -117 c226 -65
+412 -116 415 -114 2 3 -111 109 -251 238 -140 128 -255 237 -255 242 0 8 364
+453 411 502 18 19 20 16 119 -188 55 -114 100 -212 100 -217 0 -6 -29 -60 -64
+-122 -36 -61 -64 -113 -62 -114 1 -2 58 4 125 13 67 9 123 15 125 13 12 -15
+366 -700 366 -708 0 -6 -108 -156 -240 -333 -132 -178 -234 -324 -227 -326 9
+-2 564 204 788 293 11 4 43 -27 115 -114 54 -67 102 -121 106 -121 4 0 5 15 2
+32 -2 18 -18 195 -35 392 -22 261 -34 367 -46 390 -9 17 -108 192 -220 389
+-111 197 -203 364 -203 370 0 7 14 54 31 105 17 51 29 96 25 99 -3 3 -46 -2
+-96 -12 -53 -10 -95 -14 -100 -9 -4 5 -57 92 -117 195 l-109 185 240 85 c156
+55 243 82 247 75 4 -6 75 -225 159 -486 84 -261 156 -479 160 -483 9 -11 16
+106 37 634 l17 447 144 132 c79 73 141 134 139 136 -2 2 -88 13 -190 23 l-187
+19 -91 84 c-49 46 -94 84 -98 86 -5 1 -33 -53 -63 -120 l-55 -123 -129 -43
+c-71 -23 -163 -53 -205 -66 l-76 -23 -59 95 c-32 52 -62 99 -65 105 -4 6 -29
+-3 -63 -22 l-55 -32 -30 58 c-270 522 -769 1467 -776 1469 -6 2 -143 -141
+-305 -318z"/><path d="M14261 3373 c-259 -478 -475 -874 -480 -881 -6 -10 -103 15 -445 119
+-240 72 -438 130 -440 128 -2 -2 -42 -332 -90 -734 -48 -401 -88 -738 -90
+-747 -2 -10 -1 -18 2 -18 4 0 121 201 261 445 140 245 257 448 262 450 7 5
+340 -42 346 -49 2 -1 -195 -285 -437 -629 l-440 -627 0 -263 0 -264 108 -36
+c59 -20 231 -71 382 -113 151 -42 303 -87 339 -100 35 -13 66 -23 67 -21 2 2
+-93 103 -212 225 l-216 222 38 67 c126 227 756 1338 761 1343 5 5 189 -183
+313 -321 l60 -66 -386 -417 c-212 -230 -384 -420 -381 -422 6 -6 1437 866
+1437 875 0 4 -164 159 -365 344 l-364 338 107 137 c60 75 298 379 531 675
+l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
+-215 -390 -474 -867z"/></g></svg></span>
+        <span class="txt">
+          <h1>Codex Imperiator Bellum</h1>
+          <p>The Great Work</p>
+        </span>
+      </button>
+      <div class="topbar-spacer"></div>
+      <div class="crumb" id="crumb"></div>
+    </div>
+  </div>
+
+  <!-- ══ HUB VIEW ══ -->
+  <div class="view active" id="view-hub">
+    <div class="hub-hero">
+      <span class="aquila"><svg class="aquila-svg" viewBox="0 0 3333.000000 1216.000000" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="currentColor" fill-rule="evenodd"><g transform="translate(0.000000,1216.000000) scale(0.100000,-0.100000)"><path d="M7 12146 c4 -8 231 -309 503 -670 422 -558 499 -656 520 -656 14 0
+2068 99 4565 220 2497 121 4545 219 4552 218 6 -2 -28 -59 -76 -128 l-88 -125
+-49 -7 c-27 -4 -1923 -168 -4214 -363 -2291 -196 -4177 -359 -4193 -363 -26
+-7 -9 -27 514 -602 297 -327 548 -596 557 -598 9 -1 1628 281 3597 627 1968
+347 3581 628 3583 626 5 -4 -45 -295 -50 -300 -2 -1 -1458 -366 -3236 -810
+-1778 -444 -3232 -810 -3230 -814 2 -4 272 -262 602 -575 482 -458 602 -567
+620 -563 11 2 1209 455 2661 1005 1451 551 2641 999 2643 997 7 -7 72 -248 72
+-265 -1 -10 -794 -408 -2350 -1180 -1292 -641 -2348 -1169 -2346 -1175 3 -10
+1276 -954 1288 -955 3 0 833 583 1845 1296 1011 713 1843 1298 1849 1301 6 2
+18 -7 27 -21 9 -14 41 -63 72 -110 l55 -85 -1545 -1458 c-850 -801 -1544
+-1461 -1543 -1465 2 -5 257 -148 568 -318 526 -287 566 -307 581 -292 9 9 560
+661 1224 1447 664 787 1211 1431 1214 1432 12 5 156 -84 154 -95 -1 -5 -415
+-690 -919 -1522 -504 -831 -914 -1513 -911 -1516 11 -11 1220 -185 1227 -177
+5 4 345 679 756 1499 l749 1490 61 -13 61 -14 -73 -232 c-41 -128 -237 -747
+-438 -1377 -200 -630 -362 -1146 -361 -1148 2 -2 266 150 588 338 l584 341
+137 552 c75 304 189 767 253 1029 l118 477 50 11 c28 7 58 14 68 17 17 4 18
+-28 11 -776 -4 -430 -4 -781 -1 -781 5 0 342 367 750 817 l137 152 -35 378
+c-19 208 -37 397 -40 419 l-6 41 67 42 c36 23 67 41 69 39 1 -2 39 -141 86
+-310 46 -170 87 -308 90 -308 4 0 65 77 135 172 71 95 197 261 281 370 83 108
+154 202 158 208 4 6 -15 35 -43 63 -65 70 -80 114 -57 173 39 104 183 136 256
+58 35 -38 30 -103 -20 -254 -120 -358 -423 -858 -785 -1295 -98 -119 -389
+-418 -475 -489 -43 -35 -44 -37 -25 -50 10 -8 262 -194 559 -415 356 -264 542
+-396 546 -388 4 7 314 790 689 1740 l681 1728 -165 172 c-91 95 -273 282 -405
+417 -233 239 -240 245 -262 231 -753 -455 -1450 -721 -2089 -796 -144 -17
+-447 -20 -570 -5 -455 55 -829 241 -1059 526 -461 571 -376 1406 217 2114 249
+297 642 607 1017 801 l100 52 2 119 1 118 -6359 0 c-5456 0 -6359 -2 -6352
+-14z"/><path d="M20633 12042 l2 -118 115 -62 c799 -430 1334 -1062 1480 -1747 27
+-127 37 -366 21 -488 -27 -198 -91 -381 -192 -544 -67 -107 -230 -279 -337
+-356 -222 -159 -511 -263 -833 -298 -148 -16 -500 -6 -664 19 -561 87 -1166
+315 -1804 682 -106 61 -197 109 -200 108 -16 -7 -801 -819 -801 -828 0 -13
+1360 -3463 1369 -3471 6 -7 1103 803 1108 818 2 6 -46 54 -106 107 -465 413
+-1005 1191 -1180 1700 -47 137 -59 203 -41 245 35 87 170 92 244 11 30 -33 36
+-48 36 -83 0 -49 -37 -116 -88 -159 l-32 -27 112 -144 c62 -80 192 -251 288
+-380 96 -129 179 -234 184 -233 5 1 46 135 91 297 45 162 83 299 86 306 2 7
+26 -2 66 -25 50 -29 63 -42 63 -62 0 -14 -16 -204 -36 -422 l-37 -397 69 -78
+c213 -238 807 -888 815 -891 5 -2 6 322 2 778 -6 768 -6 782 13 777 10 -4 38
+-11 62 -16 24 -5 46 -12 49 -15 3 -3 120 -465 258 -1027 139 -561 256 -1024
+261 -1029 23 -21 1159 -679 1162 -672 1 5 -193 624 -432 1377 -308 967 -432
+1371 -424 1376 14 9 108 23 112 18 2 -2 340 -674 751 -1494 412 -819 749
+-1491 751 -1493 3 -5 1225 175 1230 181 3 2 -410 687 -916 1521 -506 835 -920
+1520 -920 1524 0 5 114 73 152 90 3 2 545 -635 1204 -1415 660 -780 1212
+-1432 1229 -1449 l30 -32 568 311 c312 171 566 314 565 318 -2 4 -696 661
+-1543 1460 -847 798 -1541 1455 -1543 1458 -3 8 135 221 143 221 3 0 829 -580
+1835 -1289 1005 -710 1837 -1295 1847 -1302 17 -10 94 43 667 466 356 263 643
+482 639 486 -8 8 -2848 1420 -4130 2054 l-572 283 36 138 c20 77 37 140 38
+142 2 2 1192 -448 2646 -999 1454 -552 2654 -1003 2667 -1003 28 -1 1232 1136
+1211 1143 -8 3 -1465 367 -3239 810 l-3224 806 -27 153 c-14 83 -25 152 -24
+152 1 0 1613 -283 3583 -630 1969 -346 3588 -630 3596 -630 13 0 1085 1166
+1094 1190 2 5 -12 11 -30 14 -18 3 -1903 166 -4188 361 -2285 195 -4178 358
+-4205 361 l-51 6 -87 126 c-48 69 -85 127 -83 129 2 2 2057 -96 4566 -217
+2509 -122 4567 -219 4574 -217 18 7 996 1304 996 1322 0 13 -645 15 -6350 15
+l-6350 0 3 -118z"/><path d="M18332 11229 c-13 -5 -42 -25 -65 -44 -22 -19 -54 -37 -71 -40 -17
+-3 -274 -7 -571 -9 -297 -2 -553 -8 -570 -13 -38 -12 -43 -37 -11 -58 14 -9
+301 -101 638 -205 337 -103 626 -194 641 -201 16 -7 34 -24 42 -38 7 -15 46
+-194 86 -399 40 -205 77 -371 81 -370 18 6 1112 915 1140 947 30 34 30 37 25
+110 -7 94 -21 143 -51 177 l-22 27 -595 63 c-617 66 -659 69 -697 53z"/><path d="M13728 11113 c-30 -35 -79 -145 -85 -192 -4 -33 -1 -57 11 -78 17
+-34 1178 -1012 1183 -997 1 5 34 169 74 364 39 195 77 369 84 387 7 17 24 38
+37 47 12 8 149 51 303 96 544 158 980 292 998 308 25 23 22 57 -8 70 -19 9
+-355 12 -1304 12 -1205 0 -1279 -1 -1293 -17z m773 -276 c89 -59 86 -172 -4
+-227 -87 -53 -200 12 -200 115 0 105 118 170 204 112z"/><path d="M17730 10663 c-101 -67 -883 -649 -887 -659 -5 -14 499 -1375 507
+-1371 5 2 393 403 825 851 l210 219 -2 81 c-3 113 -122 707 -149 743 -23 30
+-60 44 -282 109 -171 49 -187 51 -222 27z"/><path d="M15350 10609 c-203 -62 -206 -63 -224 -91 -8 -13 -26 -90 -41 -173
+-14 -82 -46 -252 -71 -377 -39 -199 -43 -231 -32 -257 19 -45 1040 -1076 1049
+-1059 27 49 479 1289 479 1315 0 19 -9 42 -22 57 -23 24 -372 284 -697 518
+l-163 118 -57 -1 c-37 0 -113 -18 -221 -50z"/><path d="M13390 10525 c-173 -68 -352 -138 -397 -155 -46 -17 -83 -37 -83 -43
+1 -21 368 -981 376 -984 9 -3 34 54 136 317 60 156 88 200 137 219 14 5 195
+53 401 106 206 53 379 100 383 105 8 7 -611 552 -631 556 -4 1 -149 -54 -322
+-121z"/><path d="M19603 10618 c-44 -26 -602 -503 -595 -509 4 -4 185 -53 402 -109
+217 -56 407 -109 422 -118 35 -20 42 -36 146 -300 49 -123 92 -223 98 -221 8
+2 387 990 381 995 -14 14 -754 268 -787 271 -25 2 -54 -2 -67 -9z"/><path d="M15680 7292 c-547 -1461 -995 -2666 -995 -2677 0 -12 166 -209 415
+-493 228 -261 416 -477 418 -481 1 -4 -89 -223 -201 -487 -112 -263 -230 -543
+-262 -622 l-58 -143 30 -32 c16 -18 83 -90 148 -162 171 -188 154 -172 165
+-155 14 22 142 324 260 615 56 138 143 346 192 464 l91 213 45 -45 46 -46
+-252 -674 c-139 -371 -252 -680 -252 -687 0 -17 362 -412 370 -403 4 4 118
+328 254 718 137 391 251 715 255 721 4 8 21 -1 49 -25 l43 -37 -226 -765
+c-124 -420 -227 -769 -230 -775 -3 -11 682 -749 695 -749 11 0 720 728 720
+739 0 6 -92 357 -205 781 l-205 769 42 37 43 37 12 -26 c7 -15 67 -193 133
+-397 224 -685 332 -1010 339 -1018 4 -4 100 89 214 206 l206 214 -250 657
+c-137 362 -249 664 -249 670 0 7 19 31 43 54 l43 42 278 -650 c153 -357 282
+-650 285 -650 16 0 316 331 315 348 0 9 -121 297 -268 639 l-268 622 421 480
+c231 264 421 487 421 494 0 8 -455 1188 -1011 2623 -556 1435 -1020 2633
+-1031 2662 -11 28 -22 52 -26 52 -4 0 -455 -1196 -1002 -2658z"/><path d="M18400 3928 c-162 -176 -296 -325 -298 -332 -1 -7 167 -273 374 -591
+207 -319 380 -588 385 -597 6 -12 2 -25 -16 -46 -14 -17 -25 -32 -25 -35 0 -3
+27 -52 60 -108 l59 -103 -41 -45 c-23 -25 -120 -130 -215 -232 l-172 -186
+-196 -23 c-107 -13 -201 -27 -208 -32 -8 -5 25 -45 106 -125 l117 -119 -55
+-128 c-31 -71 -54 -132 -53 -137 2 -4 85 26 185 68 l183 76 411 -117 c226 -65
+412 -116 415 -114 2 3 -111 109 -251 238 -140 128 -255 237 -255 242 0 8 364
+453 411 502 18 19 20 16 119 -188 55 -114 100 -212 100 -217 0 -6 -29 -60 -64
+-122 -36 -61 -64 -113 -62 -114 1 -2 58 4 125 13 67 9 123 15 125 13 12 -15
+366 -700 366 -708 0 -6 -108 -156 -240 -333 -132 -178 -234 -324 -227 -326 9
+-2 564 204 788 293 11 4 43 -27 115 -114 54 -67 102 -121 106 -121 4 0 5 15 2
+32 -2 18 -18 195 -35 392 -22 261 -34 367 -46 390 -9 17 -108 192 -220 389
+-111 197 -203 364 -203 370 0 7 14 54 31 105 17 51 29 96 25 99 -3 3 -46 -2
+-96 -12 -53 -10 -95 -14 -100 -9 -4 5 -57 92 -117 195 l-109 185 240 85 c156
+55 243 82 247 75 4 -6 75 -225 159 -486 84 -261 156 -479 160 -483 9 -11 16
+106 37 634 l17 447 144 132 c79 73 141 134 139 136 -2 2 -88 13 -190 23 l-187
+19 -91 84 c-49 46 -94 84 -98 86 -5 1 -33 -53 -63 -120 l-55 -123 -129 -43
+c-71 -23 -163 -53 -205 -66 l-76 -23 -59 95 c-32 52 -62 99 -65 105 -4 6 -29
+-3 -63 -22 l-55 -32 -30 58 c-270 522 -769 1467 -776 1469 -6 2 -143 -141
+-305 -318z"/><path d="M14261 3373 c-259 -478 -475 -874 -480 -881 -6 -10 -103 15 -445 119
+-240 72 -438 130 -440 128 -2 -2 -42 -332 -90 -734 -48 -401 -88 -738 -90
+-747 -2 -10 -1 -18 2 -18 4 0 121 201 261 445 140 245 257 448 262 450 7 5
+340 -42 346 -49 2 -1 -195 -285 -437 -629 l-440 -627 0 -263 0 -264 108 -36
+c59 -20 231 -71 382 -113 151 -42 303 -87 339 -100 35 -13 66 -23 67 -21 2 2
+-93 103 -212 225 l-216 222 38 67 c126 227 756 1338 761 1343 5 5 189 -183
+313 -321 l60 -66 -386 -417 c-212 -230 -384 -420 -381 -422 6 -6 1437 866
+1437 875 0 4 -164 159 -365 344 l-364 338 107 137 c60 75 298 379 531 675
+l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
+-215 -390 -474 -867z"/></g></svg></span>
+      <h2>Codex Imperiator Bellum</h2>
+      <p class="sub">One archive to serve the Emperor's wars — rules, armies, and the labour of the brush.</p>
+      <div class="hub-rule"><span>Ave Imperator</span></div>
+    </div>
+    <div class="wrap">
+      <div class="spokes">
+        <!-- LIVE: Iura Belli -->
+        <button class="spoke" onclick="goIura()">
+          <span class="badge live">Live</span>
+          <span class="ico">⚖</span>
+          <span class="la">Iura Belli</span>
+          <span class="en">The Laws of War</span>
+          <span class="desc">The core rules, weapon and unit abilities, stratagems and errata — the binding text, kept current and versioned.</span>
+        </button>
+        <!-- EXTERNAL: Sanctum Librorum -->
+        <a class="spoke" href="https://aaronmshurts-lab.github.io/Sanctum-Librorum" target="_blank" rel="noopener">
+          <span class="badge ext">Archive</span>
+          <span class="ico">📖</span>
+          <span class="la">Sanctum Librorum</span>
+          <span class="en">The Library</span>
+          <span class="desc">The Black Library catalogue — every tome tracked, owned, read and sought. Opens in the archive proper.</span>
+        </a>
+        <!-- LOCKED spokes -->
+        <div class="spoke locked">
+          <span class="badge soon">To Come</span>
+          <span class="ico">🛡</span>
+          <span class="la">Armamentarium</span>
+          <span class="en">The Armoury · Datasheets</span>
+          <span class="desc">Examine units across the five factions — profiles, wargear, keywords and abilities.</span>
+        </div>
+        <div class="spoke locked">
+          <span class="badge soon">To Come</span>
+          <span class="ico">⚔</span>
+          <span class="la">Collatio</span>
+          <span class="en">The Comparison · Abilities</span>
+          <span class="desc">Set unit against unit and ability against ability, weighing strengths side by side.</span>
+        </div>
+        <div class="spoke locked">
+          <span class="badge soon">To Come</span>
+          <span class="ico">✠</span>
+          <span class="la">Ordinatio Aciei</span>
+          <span class="en">The Muster · List Building</span>
+          <span class="desc">Raise detachments, assign enhancements, tally points — verified against BattleForge.</span>
+        </div>
+        <div class="spoke locked">
+          <span class="badge soon">To Come</span>
+          <span class="ico">🎨</span>
+          <span class="la">Officina Pigmenti</span>
+          <span class="en">The Workshop · Inventory &amp; Paint</span>
+          <span class="desc">Track models, paint progress and QR-tagged bases across every crusade.</span>
+        </div>
+      </div>
+    </div>
+    <div class="hub-foot">
+      <div class="ver">Current ruleset · <b id="hub-ver">…</b></div>
+    </div>
+  </div>
+
+  <!-- ══ IURA BELLI VIEW ══ -->
+  <div class="view" id="view-iura">
+    <div class="spoke-head">
+      <div class="eyebrow">Codex Imperiator Bellum</div>
+      <h2>Iura Belli</h2>
+      <p class="sub">The Laws of War — the binding text of the 41st millennium.</p>
+    </div>
+    <div class="controls">
+      <div class="wrap controls-inner">
+        <div class="search">
+          <span class="si">⌕</span>
+          <input id="q" type="text" placeholder="Search the laws — name or rules text…" oninput="onSearch()" autocomplete="off">
+        </div>
+        <div class="segs" id="type-segs"></div>
+      </div>
+    </div>
+    <div class="wrap">
+      <div class="tabs">
+        <button class="tab active" data-tab="abilities" onclick="setTab('abilities')">Abilities <span class="ct" id="ct-ab"></span></button>
+        <button class="tab" data-tab="stratagems" onclick="setTab('stratagems')">Stratagems <span class="ct" id="ct-st"></span></button>
+        <button class="tab" data-tab="errata" onclick="setTab('errata')">Errata <span class="ct" id="ct-er"></span></button>
+      </div>
+      <div class="count" id="count"></div>
+      <div id="content"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+    // ──────────────────────────────────────────────
+    //  ⚠  Shared with Sanctum Librorum (same Supabase project)
+    // ──────────────────────────────────────────────
+    const SUPABASE_URL      = 'https://yzhoqdjhttdztorcsbdt.supabase.co'
+    const SUPABASE_ANON_KEY = 'sb_publishable_MZpvQ3ySRm8l_saadAeKFw_GAKYPPa6'
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+    // ── state ──
+    const store = { abilities:[], stratagems:[], errata:[], version:null, loaded:false }
+    let currentTab = 'abilities'
+    let typeFilter = 'all'
+    let query = ''
+
+    // ── phase lookup for stratagem "used_in" nicety ──
+    const USED_IN_LABEL = { 'your turn':'Your turn', 'opponent turn':"Opponent's turn", 'either':'Either turn' }
+
+    // ── routing ──
+    const views = { hub:document.getElementById('view-hub'), iura:document.getElementById('view-iura') }
+    function show(v){ Object.values(views).forEach(el=>el.classList.remove('active')); views[v].classList.add('active'); window.scrollTo(0,0) }
+    window.goHub = ()=>{ show('hub'); setCrumb(''); history.replaceState({},'','#') }
+    window.goIura = async ()=>{ show('iura'); setCrumb('Iura Belli'); history.replaceState({},'','#iura'); if(!store.loaded) await loadAll(); render() }
+    function setCrumb(t){ document.getElementById('crumb').innerHTML = t ? `<b>${t}</b>` : '' }
+
+    // ── data load ──
+    async function loadAll(){
+      try {
+        const [ab, st, er, ver] = await Promise.all([
+          supabase.from('bellum_core_abilities').select('*').eq('is_current',true).order('ref_number'),
+          supabase.from('bellum_core_stratagems').select('*').eq('is_current',true).order('ref_number'),
+          supabase.from('bellum_errata').select('*').order('effective_date'),
+          supabase.from('bellum_ruleset_versions').select('*').order('effective_date',{ascending:false}).limit(1)
+        ])
+        if(ab.error) throw ab.error
+        if(st.error) throw st.error
+        if(er.error) throw er.error
+        store.abilities = ab.data||[]
+        store.stratagems = st.data||[]
+        store.errata = er.data||[]
+        store.version = (ver.data&&ver.data[0])||null
+        store.loaded = true
+        // counts
+        document.getElementById('ct-ab').textContent = store.abilities.length
+        document.getElementById('ct-st').textContent = store.stratagems.length
+        document.getElementById('ct-er').textContent = store.errata.length
+        buildTypeSegs()
+      } catch(e){
+        document.getElementById('content').innerHTML =
+          `<div class="state err"><span class="ico">⚠</span>The archive could not be reached.<br><span style="font-size:.82rem;opacity:.7">${(e.message||e)}</span></div>`
+        throw e
+      }
+    }
+
+    // ── version line on the hub ──
+    async function loadVersionForHub(){
+      try{
+        const { data } = await supabase.from('bellum_ruleset_versions').select('name,effective_date').order('effective_date',{ascending:false}).limit(1)
+        if(data&&data[0]){
+          const d = new Date(data[0].effective_date+'T00:00:00')
+          const fmt = d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})
+          document.getElementById('hub-ver').textContent = `${data[0].name} · ${fmt}`
+        } else { document.getElementById('hub-ver').textContent = '—' }
+      }catch{ document.getElementById('hub-ver').textContent = '—' }
+    }
+
+    // ── type filter segments (abilities only) ──
+    function buildTypeSegs(){
+      const el = document.getElementById('type-segs')
+      const segs = [['all','All'],['weapon','Weapon'],['unit','Unit']]
+      el.innerHTML = segs.map(([v,l])=>`<button class="seg ${v==='all'?'active':''}" data-type="${v}" onclick="setType('${v}')">${l}</button>`).join('')
+    }
+    window.setType = (t)=>{ typeFilter=t; document.querySelectorAll('.seg').forEach(s=>s.classList.toggle('active',s.dataset.type===t)); render() }
+
+    // ── tabs ──
+    window.setTab = (t)=>{
+      currentTab=t
+      document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===t))
+      // type segs only make sense for abilities
+      document.getElementById('type-segs').style.display = (t==='abilities')?'flex':'none'
+      render()
+    }
+    window.onSearch = ()=>{ query = document.getElementById('q').value.trim().toLowerCase(); render() }
+
+    // ── helpers ──
+    function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) }
+    function matchQ(fields){ if(!query) return true; return fields.some(f=>f&&f.toLowerCase().includes(query)) }
+    window.toggleEntry = (id)=>{ document.getElementById(id).classList.toggle('open') }
+
+    // ── render ──
+    function render(){
+      const c = document.getElementById('content')
+      const cnt = document.getElementById('count')
+      if(currentTab==='abilities') return renderAbilities(c,cnt)
+      if(currentTab==='stratagems') return renderStratagems(c,cnt)
+      if(currentTab==='errata') return renderErrata(c,cnt)
+    }
+
+    function renderAbilities(c,cnt){
+      let rows = store.abilities.filter(a=>{
+        if(typeFilter!=='all' && a.ability_type!==typeFilter) return false
+        return matchQ([a.name,a.rules_text,a.ref_number])
+      })
+      cnt.textContent = `${rows.length} ${rows.length===1?'law':'laws'} shown`
+      if(!rows.length){ c.innerHTML = emptyState(); return }
+      c.innerHTML = `<div class="grid">${rows.map(a=>{
+        const id = `ab-${a.ability_id}`
+        const pill = a.ability_type==='weapon'
+          ? `<span class="pill weapon">Weapon</span>`
+          : `<span class="pill unit">Unit</span>`
+        return `<div class="entry" id="${id}">
+          <div class="entry-head" onclick="toggleEntry('${id}')">
+            <span class="entry-name">${esc(a.name)}${a.takes_value?' <span style="opacity:.55;font-weight:400">· X</span>':''}
+              <span class="expand-hint">Tap to read the full law</span></span>
+            ${pill}
+            <span class="entry-ref">${esc(a.ref_number||'')}</span>
+          </div>
+          <div class="entry-body"><div class="entry-body-inner"><p>${esc(a.rules_text)}</p></div></div>
+        </div>`
+      }).join('')}</div>`
+    }
+
+    function renderStratagems(c,cnt){
+      let rows = store.stratagems.filter(s=>matchQ([s.name,s.effect_text,s.when_text,s.target_text,s.ref_number]))
+      cnt.textContent = `${rows.length} ${rows.length===1?'stratagem':'stratagems'} shown`
+      if(!rows.length){ c.innerHTML = emptyState(); return }
+      c.innerHTML = `<div class="grid">${rows.map(s=>{
+        const id = `st-${s.stratagem_id}`
+        const used = USED_IN_LABEL[s.used_in]||s.used_in||''
+        return `<div class="entry" id="${id}">
+          <div class="entry-head" onclick="toggleEntry('${id}')">
+            <span class="entry-name">${esc(s.name)}
+              <span class="expand-hint">${esc(used)} · tap for full text</span></span>
+            <span class="pill cp">${s.cp_cost==null?'X':s.cp_cost}CP</span>
+            <span class="entry-ref">${esc(s.ref_number||'')}</span>
+          </div>
+          <div class="entry-body"><div class="entry-body-inner"><div class="strat-meta">
+            ${s.when_text?`<div class="strat-row"><span class="strat-label">When</span><span class="strat-val">${esc(s.when_text)}</span></div>`:''}
+            ${s.target_text?`<div class="strat-row"><span class="strat-label">Target</span><span class="strat-val">${esc(s.target_text)}</span></div>`:''}
+            ${s.effect_text?`<div class="strat-row"><span class="strat-label">Effect</span><span class="strat-val">${esc(s.effect_text)}</span></div>`:''}
+            ${s.restrictions_text?`<div class="strat-row"><span class="strat-label">Restrict</span><span class="strat-val restr">${esc(s.restrictions_text)}</span></div>`:''}
+          </div></div></div>
+        </div>`
+      }).join('')}</div>`
+    }
+
+    function renderErrata(c,cnt){
+      let rows = store.errata.filter(e=>matchQ([e.title,e.rules_text,e.scope]))
+      cnt.textContent = `${rows.length} ${rows.length===1?'ruling':'rulings'} shown`
+      if(!rows.length){ c.innerHTML = emptyState(); return }
+      c.innerHTML = rows.map(e=>`
+        <div class="errata-note">
+          <span class="ei">§</span>
+          <span class="et"><b>${esc(e.title)}</b>${esc(e.rules_text)}</span>
+        </div>`).join('')
+    }
+
+    function emptyState(){
+      return `<div class="state"><span class="ico">⌕</span>No entry answers to that search.<br>
+        <span style="font-size:.85rem;opacity:.7">Try a different term, or clear the filter.</span></div>`
+    }
+
+    // ── boot ──
+    document.getElementById('content').innerHTML = ''
+    loadVersionForHub()
+    // deep-link support
+    if(location.hash==='#iura'){ goIura() }
+  </script>
+</body>
+</html>
