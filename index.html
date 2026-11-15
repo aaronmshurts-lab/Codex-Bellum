@@ -248,10 +248,23 @@
     .chip-empty{height:62px;border-radius:var(--radius);border:1px dashed var(--border-gold);
       display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:.64rem;
       font-style:italic;text-align:center;padding:.2rem}
-    .chip-cap{font-size:.82rem;color:var(--text);margin-top:.4rem;line-height:1.35}
+    .chip-cap{font-size:.82rem;color:var(--text);margin-top:.4rem;line-height:1.35;text-align:center}
     .chip-cap .cn{display:block;color:var(--text);font-size:.85rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .chip-cap .ch{display:block;font-family:'Cinzel',serif;color:var(--text);font-size:.78rem;letter-spacing:.02em}
-    .chip-role{display:block;font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.07em;text-transform:uppercase;color:var(--gold);opacity:.75;margin-bottom:.35rem}
+    .chip-role{display:block;font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.07em;text-transform:uppercase;color:var(--gold);opacity:.75;margin-bottom:.35rem;text-align:center}
+    /* notes section (fills the space below the harmonies) */
+    .modal-notes{margin-top:1.4rem;border-top:1px solid var(--border);padding-top:1.1rem}
+    .notes-head{display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin-bottom:.6rem}
+    .notes-title{font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+    .notes-save{font-family:'Cinzel',serif;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;
+      padding:.4rem .9rem;background:var(--surface);border:1px solid var(--border-gold);color:var(--gold);
+      cursor:pointer;border-radius:2px;transition:all .15s}
+    .notes-save:hover{background:var(--gold-glow);color:var(--gold-bright)}
+    .notes-save.saved{color:#8fd19e;border-color:#8fd19e}
+    .notes-area{width:100%;min-height:120px;resize:vertical;padding:.8rem .9rem;background:var(--surface);
+      border:1px solid var(--border);color:var(--text);font-family:'EB Garamond',serif;font-size:.98rem;
+      line-height:1.55;outline:none;border-radius:var(--radius);transition:border-color .2s}
+    .notes-area:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-glow)}
     @media(max-width:760px){
       .modal{grid-template-columns:1fr;max-width:460px}
       .modal-swatch{min-height:150px}
@@ -800,7 +813,7 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
     // ══════════════════════════════════════════════
     //  OFFICINA PIGMENTI — paint catalogue + inventory
     // ══════════════════════════════════════════════
-    const paintStore = { paints:[], inventory:new Map(), loaded:false, brands:[] }
+    const paintStore = { paints:[], inventory:new Map(), notes:new Map(), loaded:false, brands:[] }
     let pQuery = '', pBrand = 'all', pOwn = 'all', pLimit = 120, opTab = 'catalogue', pSort = 'hue', pSeries = 'all'
     const PAGE = 120
 
@@ -863,12 +876,14 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
         triad: [ {role:'Triad +120°', hex:hslToHex(h+120,s,l)}, {role:'Triad +240°', hex:hslToHex(h+240,s,l)} ]
       }
     }
-    // nearest catalogue paint to a target hex, by Lab ΔE; optional owned-only pool
-    function nearestPaint(targetHex, ownedOnly){
+    // nearest catalogue paint to a target hex, by Lab ΔE
+    // ownedOnly → restrict to owned; brandName (or null) → restrict to that brand
+    function nearestPaint(targetHex, ownedOnly, brandName){
       const {r,g,b}=hexToRgb(targetHex); const tl=rgbToLab(r,g,b)
       let best=null, bestD=Infinity
       for(const p of paintStore.paints){
         if(ownedOnly && paintStore.inventory.get(p.paint_id)!=='owned') continue
+        if(brandName && p.brand!==brandName) continue
         const d=deltaE(tl, labOf(p))
         if(d<bestD){ bestD=d; best=p }
       }
@@ -892,8 +907,11 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
         paintStore.brands = [...new Set(all.map(p=>p.brand))].sort()
         // inventory overlay
         const { data:inv, error:ierr } = await supabase
-          .from('bellum_paint_inventory').select('paint_id,status')
-        if(!ierr && inv){ inv.forEach(r=>paintStore.inventory.set(r.paint_id, r.status)) }
+          .from('bellum_paint_inventory').select('paint_id,status,notes')
+        if(!ierr && inv){ inv.forEach(r=>{
+          if(r.status) paintStore.inventory.set(r.paint_id, r.status)
+          if(r.notes) paintStore.notes.set(r.paint_id, r.notes)
+        }) }
         paintStore.loaded = true
         document.getElementById('ct-paint').textContent = all.length
         buildBrandSegs()
@@ -1063,12 +1081,43 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
       }
     }
 
+    // ── save a per-paint note (upsert; preserves existing status) ──
+    window.saveNote = async (paintId)=>{
+      const ta = document.getElementById('notes-area')
+      const btn = document.getElementById('notes-save-btn')
+      const text = ta.value.trim()
+      const status = paintStore.inventory.get(paintId) || null
+      try {
+        if(text===''){
+          // empty note: clear it. If no status either, drop the row entirely.
+          if(status===null){
+            const { error } = await supabase.from('bellum_paint_inventory').delete().eq('paint_id',paintId)
+            if(error) throw error
+          } else {
+            const { error } = await supabase.from('bellum_paint_inventory')
+              .upsert({ paint_id:paintId, status, notes:null, updated_at:new Date().toISOString() }, { onConflict:'paint_id' })
+            if(error) throw error
+          }
+          paintStore.notes.delete(paintId)
+        } else {
+          const { error } = await supabase.from('bellum_paint_inventory')
+            .upsert({ paint_id:paintId, status, notes:text, updated_at:new Date().toISOString() }, { onConflict:'paint_id' })
+          if(error) throw error
+          paintStore.notes.set(paintId, text)
+        }
+        btn.textContent = 'Saved ✓'; btn.classList.add('saved')
+        setTimeout(()=>{ if(btn){ btn.textContent='Save'; btn.classList.remove('saved') } }, 1600)
+      } catch(e){
+        alert('Could not save the note — the inventory may be read-only.\n\n'+(e.message||e))
+      }
+    }
+
     // ── paint detail modal ──
-    let modalPaintId = null, harmonyMode = 'theory', harmonyScope = 'all'
+    let modalPaintId = null, harmonyMode = 'theory', harmonyScope = 'all', harmonyBrand = 'all'
 
     window.openModal = (paintId)=>{
       modalPaintId = paintId
-      harmonyMode = 'theory'; harmonyScope = 'all'   // reset per open
+      harmonyMode = 'theory'; harmonyScope = 'all'; harmonyBrand = 'all'   // reset per open
       renderModal()
       document.getElementById('paint-modal').classList.add('open')
     }
@@ -1078,6 +1127,7 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
     }
     window.setHarmonyMode = (m)=>{ harmonyMode=m; renderModal() }
     window.setHarmonyScope = (s)=>{ harmonyScope=s; renderModal() }
+    window.setHarmonyBrand = (bScope)=>{ harmonyBrand=bScope; renderModal() }
 
     function chipHtml(role, hex, paint){
       // paint === undefined → pure-theory chip; paint===null → no-match placeholder; else matched paint
@@ -1097,19 +1147,23 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
     function harmonyGroup(label, targets){
       const chips = targets.map(t=>{
         if(harmonyMode==='theory') return chipHtml(t.role, t.hex, undefined)
-        const match = nearestPaint(t.hex, harmonyScope==='owned')
+        const brandLimit = (harmonyBrand==='brand') ? modalBrand() : null
+        const match = nearestPaint(t.hex, harmonyScope==='owned', brandLimit)
         return chipHtml(t.role, t.hex, match||null)
       }).join('')
       return `<div class="harmony-group"><div class="harmony-group-label">${esc(label)}</div>
         <div class="harmony-row">${chips}</div></div>`
     }
 
+    function modalBrand(){ const p=paintStore.paints.find(x=>x.paint_id===modalPaintId); return p?p.brand:null }
+
     function renderModal(){
       const p = paintStore.paints.find(x=>x.paint_id===modalPaintId)
       if(!p) return
       const st = paintStore.inventory.get(p.paint_id)
+      const noteVal = paintStore.notes.get(p.paint_id) || ''
       const H = harmoniesFor(p)
-      const scopeDisabled = harmonyMode!=='catalog'
+      const catDisabled = harmonyMode!=='catalog'
       const specs = [
         ['Brand', p.brand],
         p.paint_set ? ['Series', p.paint_set] : null,
@@ -1140,8 +1194,12 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
                 <button class="${harmonyMode==='catalog'?'active':''}" onclick="setHarmonyMode('catalog')">Catalog Colours</button>
               </div>
               <div class="htog">
-                <button class="${harmonyScope==='all'?'active':''}" onclick="setHarmonyScope('all')" ${scopeDisabled?'disabled':''}>All</button>
-                <button class="${harmonyScope==='owned'?'active':''}" onclick="setHarmonyScope('owned')" ${scopeDisabled?'disabled':''}>Owned Only</button>
+                <button class="${harmonyScope==='all'?'active':''}" onclick="setHarmonyScope('all')" ${catDisabled?'disabled':''}>All</button>
+                <button class="${harmonyScope==='owned'?'active':''}" onclick="setHarmonyScope('owned')" ${catDisabled?'disabled':''}>Owned Only</button>
+              </div>
+              <div class="htog">
+                <button class="${harmonyBrand==='all'?'active':''}" onclick="setHarmonyBrand('all')" ${catDisabled?'disabled':''}>All Brands</button>
+                <button class="${harmonyBrand==='brand'?'active':''}" onclick="setHarmonyBrand('brand')" ${catDisabled?'disabled':''} title="${esc(p.brand)} only">${esc(p.brand.split(' ')[0])} Only</button>
               </div>
             </div>
           </div>
@@ -1149,6 +1207,13 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
             ${harmonyGroup('Analogous', H.analogous)}
             ${harmonyGroup('Complementary', H.complementary)}
             ${harmonyGroup('Triad', H.triad)}
+          </div>
+          <div class="modal-notes">
+            <div class="notes-head">
+              <span class="notes-title">Notes</span>
+              <button class="notes-save" id="notes-save-btn" onclick="saveNote(${p.paint_id})">Save</button>
+            </div>
+            <textarea class="notes-area" id="notes-area" placeholder="e.g. goes well with Sororitas robes; needs two thin coats…">${esc(noteVal)}</textarea>
           </div>
         </div>`
     }
