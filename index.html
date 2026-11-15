@@ -162,25 +162,40 @@
       .crumb{display:none}
     }
     /* ── OFFICINA PIGMENTI · paint catalogue ── */
-    .paint-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:.7rem;padding-bottom:3rem}
-    .paint{display:flex;align-items:stretch;gap:0;background:var(--card);border:1px solid var(--border);
-      border-radius:var(--radius);overflow:hidden;transition:border-color .18s,background .18s;min-height:62px}
-    .paint:hover{border-color:var(--border-gold);background:var(--card-hover)}
-    .paint-swatch{width:54px;flex-shrink:0;border-right:1px solid rgba(0,0,0,.35)}
-    .paint-info{padding:.55rem .7rem;display:flex;flex-direction:column;justify-content:center;min-width:0;flex:1}
-    .paint-name{font-family:'Cinzel',serif;font-size:.82rem;font-weight:600;color:var(--gold-bright);
-      line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .paint-meta{font-size:.68rem;color:var(--text-muted);letter-spacing:.03em;margin-top:.15rem;
+    .paint-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.6rem;padding-bottom:3rem}
+    .paint{position:relative;aspect-ratio:1/1;border:1px solid var(--border);border-radius:var(--radius);
+      overflow:hidden;transition:border-color .18s,transform .1s;cursor:default}
+    .paint:hover{border-color:var(--border-gold)}
+    .paint:hover .paint-own{opacity:1}
+    .paint-swatch{position:absolute;inset:0}
+    /* bottom scrim carries the label; gradient makes text read on ANY swatch colour */
+    .paint-label{position:absolute;left:0;right:0;bottom:0;padding:.75rem .6rem .5rem;
+      display:flex;flex-direction:column;gap:.1rem;pointer-events:none}
+    .paint-label.dark{background:linear-gradient(to top,rgba(7,7,13,.92) 0%,rgba(7,7,13,.7) 55%,transparent 100%)}
+    .paint-label.light{background:linear-gradient(to top,rgba(245,243,238,.94) 0%,rgba(245,243,238,.72) 55%,transparent 100%)}
+    .paint-name{font-family:'Cinzel',serif;font-size:.78rem;font-weight:700;line-height:1.2;
       overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .paint-meta .hex{font-family:'Cinzel',serif;opacity:.7}
-    .paint-own{display:flex;gap:.3rem;padding:.4rem .5rem .4rem 0;align-items:center}
-    .own-btn{font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.06em;text-transform:uppercase;
-      padding:.28rem .4rem;background:var(--surface);border:1px solid var(--border);color:var(--text-muted);
-      cursor:pointer;border-radius:2px;transition:all .15s;line-height:1;white-space:nowrap}
-    .own-btn:hover{color:var(--text);border-color:var(--border-gold)}
-    .own-btn.on-owned{color:#8fd19e;border-color:rgba(143,209,158,.5);background:rgba(143,209,158,.1)}
-    .own-btn.on-wish{color:var(--gold-bright);border-color:var(--border-gold);background:var(--gold-glow)}
+    .paint-meta{font-size:.64rem;letter-spacing:.02em;line-height:1.2;
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    /* default house gold on dark scrim; auto-switch to ink on light scrim */
+    .paint-label.dark .paint-name{color:var(--gold-bright)}
+    .paint-label.dark .paint-meta{color:var(--text-muted)}
+    .paint-label.light .paint-name{color:#1a160c}
+    .paint-label.light .paint-meta{color:#5a5340}
+    /* owner controls, top-right overlay */
+    .paint-own{position:absolute;top:.45rem;right:.45rem;display:flex;gap:.3rem;opacity:.85;transition:opacity .18s;z-index:2}
+    .own-btn{font-size:.72rem;width:1.6rem;height:1.6rem;display:flex;align-items:center;justify-content:center;
+      background:rgba(7,7,13,.62);border:1px solid rgba(255,255,255,.22);color:#d8d2c4;backdrop-filter:blur(3px);
+      cursor:pointer;border-radius:2px;transition:all .15s;line-height:1;padding:0}
+    .own-btn:hover{border-color:var(--gold);color:#fff}
+    .own-btn.on-owned{color:#8fd19e;border-color:#8fd19e;background:rgba(10,30,16,.8)}
+    .own-btn.on-wish{color:var(--gold-bright);border-color:var(--gold);background:rgba(40,32,8,.8)}
     .brand-segs{display:flex;flex-wrap:wrap;gap:.3rem;max-width:100%}
+    .sort-bar{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.1rem}
+    .sort-label{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted)}
+    .sort-select{font-family:'EB Garamond',serif;font-size:.9rem;padding:.4rem .7rem;background:var(--surface);
+      border:1px solid var(--border);color:var(--text);border-radius:var(--radius);cursor:pointer;outline:none}
+    .sort-select:focus{border-color:var(--gold)}
     .load-more{display:block;margin:0 auto 3rem;font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.14em;
       text-transform:uppercase;padding:.7rem 1.6rem;background:var(--surface);border:1px solid var(--border-gold);
       color:var(--gold);cursor:pointer;border-radius:var(--radius);transition:all .18s}
@@ -540,6 +555,17 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
         <button class="tab" data-optab="sketch" onclick="setOpTab('sketch')">Sketch</button>
       </div>
       <div class="brand-segs" id="brand-segs" style="margin-bottom:1.1rem"></div>
+      <div class="sort-bar" id="sort-bar">
+        <span class="sort-label">Sort</span>
+        <select class="sort-select" id="sort-select" onchange="setSort(this.value)">
+          <option value="hue">Colour (by hue)</option>
+          <option value="name">Name (A–Z)</option>
+          <option value="code">Serial / code</option>
+          <option value="owned">Owned first</option>
+          <option value="wishlist">Wishlist first</option>
+          <option value="series" id="sort-series-opt" hidden>Series</option>
+        </select>
+      </div>
       <div class="count" id="pcount"></div>
       <div id="pcontent"></div>
     </div>
@@ -713,8 +739,33 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
     //  OFFICINA PIGMENTI — paint catalogue + inventory
     // ══════════════════════════════════════════════
     const paintStore = { paints:[], inventory:new Map(), loaded:false, brands:[] }
-    let pQuery = '', pBrand = 'all', pOwn = 'all', pLimit = 120, opTab = 'catalogue'
+    let pQuery = '', pBrand = 'all', pOwn = 'all', pLimit = 120, opTab = 'catalogue', pSort = 'hue'
     const PAGE = 120
+
+    // ── colour helpers ──
+    function hexToRgb(hex){
+      const h = (hex||'').replace('#',''); if(h.length!==6) return {r:0,g:0,b:0}
+      return { r:parseInt(h.slice(0,2),16), g:parseInt(h.slice(2,4),16), b:parseInt(h.slice(4,6),16) }
+    }
+    function rgbToHsl(r,g,b){
+      r/=255; g/=255; b/=255
+      const max=Math.max(r,g,b), min=Math.min(r,g,b); let h=0,s=0; const l=(max+min)/2
+      if(max!==min){ const d=max-min; s=l>0.5?d/(2-max-min):d/(max+min)
+        switch(max){ case r:h=(g-b)/d+(g<b?6:0);break; case g:h=(b-r)/d+2;break; default:h=(r-g)/d+4 }
+        h/=6 }
+      return { h:h*360, s, l }
+    }
+    // perceived luminance (WCAG-ish) → decide light vs dark scrim
+    function isLight(hex){
+      const {r,g,b}=hexToRgb(hex)
+      const L=(0.299*r+0.587*g+0.114*b)/255
+      return L>0.6
+    }
+    // cache hue/sat/lum per paint on first use
+    function hsl(p){
+      if(p._hsl) return p._hsl
+      const {r,g,b}=hexToRgb(p.hex); p._hsl=rgbToHsl(r,g,b); return p._hsl
+    }
 
     async function loadPaints(){
       try {
@@ -749,7 +800,20 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
       const mk = (v,l)=>`<button class="seg ${v===pBrand?'active':''}" data-brand="${esc(v)}" onclick="setBrand('${esc(v).replace(/'/g,"\\'")}')">${esc(l)}</button>`
       el.innerHTML = mk('all','All Brands') + paintStore.brands.map(b=>mk(b,b)).join('')
     }
-    window.setBrand = (b)=>{ pBrand=b; pLimit=PAGE; document.querySelectorAll('#brand-segs .seg').forEach(s=>s.classList.toggle('active',s.dataset.brand===b)); renderPaints() }
+    window.setBrand = (b)=>{
+      pBrand=b; pLimit=PAGE
+      document.querySelectorAll('#brand-segs .seg').forEach(s=>s.classList.toggle('active',s.dataset.brand===b))
+      // "Series" sort only meaningful within a single brand
+      const seriesOpt = document.getElementById('sort-series-opt')
+      if(b==='all'){
+        seriesOpt.hidden = true
+        if(pSort==='series'){ pSort='hue'; document.getElementById('sort-select').value='hue' }
+      } else {
+        seriesOpt.hidden = false
+      }
+      renderPaints()
+    }
+    window.setSort = (s)=>{ pSort=s; pLimit=PAGE; renderPaints() }
     window.setOwnFilter = (o)=>{ pOwn=o; pLimit=PAGE; document.querySelectorAll('#view-officina .controls .seg').forEach(s=>s.classList.toggle('active',s.dataset.own===o)); renderPaints() }
     window.onPaintSearch = ()=>{ pQuery = document.getElementById('pq').value.trim().toLowerCase(); pLimit=PAGE; renderPaints() }
 
@@ -759,6 +823,7 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
       // brand/own controls only apply to the catalogue
       const show = (t==='catalogue')
       document.getElementById('brand-segs').style.display = show?'flex':'none'
+      document.getElementById('sort-bar').style.display = show?'flex':'none'
       document.querySelector('#view-officina .controls').style.display = show?'block':'none'
       if(t==='catalogue'){ renderPaints() }
       else {
@@ -785,9 +850,44 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
       })
     }
 
+    function sortPaints(rows){
+      const inv = paintStore.inventory
+      const byName = (a,b)=>a.paint_name.localeCompare(b.paint_name)
+      const arr = rows.slice()
+      switch(pSort){
+        case 'name': arr.sort(byName); break
+        case 'code':
+          // code present first (numeric-aware), blanks last, then by name
+          arr.sort((a,b)=>{
+            const ca=a.code||'', cb=b.code||''
+            if(!ca && !cb) return byName(a,b)
+            if(!ca) return 1; if(!cb) return -1
+            return ca.localeCompare(cb,undefined,{numeric:true}) || byName(a,b)
+          }); break
+        case 'series':
+          arr.sort((a,b)=>(a.paint_set||'').localeCompare(b.paint_set||'') || byName(a,b)); break
+        case 'owned':
+          arr.sort((a,b)=>((inv.get(b.paint_id)==='owned')-(inv.get(a.paint_id)==='owned')) || byName(a,b)); break
+        case 'wishlist':
+          arr.sort((a,b)=>((inv.get(b.paint_id)==='wishlist')-(inv.get(a.paint_id)==='wishlist')) || byName(a,b)); break
+        case 'hue':
+        default:
+          // near-greys (very low saturation) sink to the end, sorted by lightness;
+          // chromatic colours sort by hue, then lightness
+          arr.sort((a,b)=>{
+            const A=hsl(a), B=hsl(b)
+            const ag=A.s<0.12, bg=B.s<0.12
+            if(ag!==bg) return ag?1:-1
+            if(ag) return A.l-B.l
+            return (A.h-B.h) || (A.l-B.l)
+          })
+      }
+      return arr
+    }
+
     function renderPaints(){
       if(opTab!=='catalogue') return
-      const rows = filteredPaints()
+      const rows = sortPaints(filteredPaints())
       const cnt = document.getElementById('pcount')
       cnt.textContent = `${rows.length.toLocaleString()} ${rows.length===1?'paint':'paints'} shown`
       const c = document.getElementById('pcontent')
@@ -796,15 +896,16 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
       const cards = page.map(p=>{
         const st = paintStore.inventory.get(p.paint_id)
         const meta = [p.code, p.paint_set].filter(Boolean).join(' · ')
+        const scrim = isLight(p.hex) ? 'light' : 'dark'
         return `<div class="paint">
-          <div class="paint-swatch" style="background:${esc(p.hex)}" title="${esc(p.hex)}"></div>
-          <div class="paint-info">
-            <span class="paint-name" title="${esc(p.paint_name)}">${esc(p.paint_name)}</span>
-            <span class="paint-meta">${esc(p.brand)}${meta?' · '+esc(meta):''} · <span class="hex">${esc(p.hex)}</span></span>
-          </div>
+          <div class="paint-swatch" style="background:${esc(p.hex)}" title="${esc(p.paint_name)} · ${esc(p.hex)}"></div>
           <div class="paint-own">
             <button class="own-btn ${st==='owned'?'on-owned':''}" onclick="toggleOwn(${p.paint_id},'owned')" title="Owned">✓</button>
             <button class="own-btn ${st==='wishlist'?'on-wish':''}" onclick="toggleOwn(${p.paint_id},'wishlist')" title="Wishlist">★</button>
+          </div>
+          <div class="paint-label ${scrim}">
+            <span class="paint-name" title="${esc(p.paint_name)}">${esc(p.paint_name)}</span>
+            <span class="paint-meta">${esc(p.brand)}${meta?' · '+esc(meta):''}</span>
           </div>
         </div>`
       }).join('')
