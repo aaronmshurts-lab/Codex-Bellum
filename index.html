@@ -205,49 +205,59 @@
     .op-subtabs{display:flex;gap:.4rem;border-bottom:1px solid var(--border);margin-bottom:1.3rem;flex-wrap:wrap}
     .op-locked-note{font-size:.76rem;color:var(--text-muted);font-style:italic;padding:.4rem 0}
 
-    /* ── paint detail modal ── */
+    /* ── paint detail modal (horizontal layout) ── */
     .modal-ov{position:fixed;inset:0;z-index:500;background:rgba(3,3,8,.78);backdrop-filter:blur(4px);
       display:none;align-items:center;justify-content:center;padding:1.5rem}
     .modal-ov.open{display:flex}
     .modal{background:var(--card);border:1px solid var(--border-gold);border-radius:var(--radius);
-      width:100%;max-width:620px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.6)}
-    .modal-swatch{height:160px;width:100%;position:relative;border-bottom:1px solid rgba(0,0,0,.4)}
-    .modal-close{position:absolute;top:.6rem;right:.7rem;width:2rem;height:2rem;border-radius:2px;
+      width:100%;max-width:1000px;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.6);
+      display:grid;grid-template-columns:320px 1fr}
+    /* left column: the big swatch + identity */
+    .modal-left{position:relative;display:flex;flex-direction:column}
+    .modal-swatch{flex:1;min-height:260px;position:relative;border-right:1px solid rgba(0,0,0,.4)}
+    .modal-close{position:absolute;top:.7rem;right:.8rem;width:2.2rem;height:2.2rem;border-radius:2px;
       background:rgba(7,7,13,.6);border:1px solid rgba(255,255,255,.25);color:#e6dfd4;cursor:pointer;
-      font-size:1.1rem;line-height:1;backdrop-filter:blur(3px);transition:all .15s}
+      font-size:1.2rem;line-height:1;backdrop-filter:blur(3px);transition:all .15s;z-index:2}
     .modal-close:hover{border-color:var(--gold);color:#fff}
-    .modal-own{position:absolute;bottom:.6rem;right:.7rem;display:flex;gap:.4rem}
-    .modal-body{padding:1.3rem 1.4rem 1.6rem}
-    .modal-name{font-family:'Cinzel',serif;font-size:1.3rem;font-weight:700;color:var(--gold-bright);line-height:1.2}
-    .modal-brand{font-size:.95rem;color:var(--text);margin-top:.3rem}
-    .modal-specs{display:flex;flex-wrap:wrap;gap:.4rem .9rem;margin-top:.7rem;padding-bottom:1.1rem;
-      border-bottom:1px solid var(--border)}
-    .modal-spec{font-size:.82rem;color:var(--text-muted)}
-    .modal-spec b{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;
-      color:var(--gold);margin-right:.35rem}
-    .harmony-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.6rem;margin:1.2rem 0 .9rem}
-    .harmony-title{font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
-    .harmony-toggles{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap}
-    .htog{display:flex;gap:.25rem}
-    .htog button{font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.08em;text-transform:uppercase;
-      padding:.3rem .55rem;background:var(--surface);border:1px solid var(--border);color:var(--text-muted);
+    .modal-own{position:absolute;bottom:.8rem;right:.8rem;display:flex;gap:.45rem}
+    .modal-own .own-btn{width:2rem;height:2rem;font-size:.95rem}
+    .modal-idblock{padding:1.1rem 1.3rem;border-right:1px solid var(--border);border-top:1px solid rgba(0,0,0,.4)}
+    .modal-name{font-family:'Cinzel',serif;font-size:1.55rem;font-weight:700;color:var(--gold-bright);line-height:1.18}
+    .modal-specs{display:flex;flex-direction:column;gap:.5rem;margin-top:.9rem}
+    .modal-spec{font-size:1rem;color:var(--text)}
+    .modal-spec b{font-family:'Cinzel',serif;font-size:.64rem;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--gold);margin-right:.5rem;display:inline-block;min-width:3.4rem}
+    /* right column: harmonies */
+    .modal-body{padding:1.3rem 1.5rem 1.6rem}
+    .harmony-head{display:flex;flex-direction:column;gap:.7rem;margin-bottom:1.1rem}
+    .harmony-title{font-family:'Cinzel',serif;font-size:.8rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+    .harmony-toggles{display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
+    .htog{display:flex;gap:.3rem}
+    .htog button{font-family:'Cinzel',serif;font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;
+      padding:.4rem .7rem;background:var(--surface);border:1px solid var(--border);color:var(--text-muted);
       cursor:pointer;border-radius:2px;transition:all .15s;white-space:nowrap}
     .htog button:hover:not(:disabled){color:var(--text);border-color:var(--border-gold)}
     .htog button.active{color:var(--gold-bright);border-color:var(--border-gold);background:var(--gold-glow)}
     .htog button:disabled{opacity:.3;cursor:not-allowed}
-    .harmony-group{margin-bottom:1.1rem}
-    .harmony-group-label{font-size:.72rem;color:var(--text-muted);font-style:italic;margin-bottom:.45rem}
-    .harmony-row{display:flex;gap:.55rem;flex-wrap:wrap}
-    .chip{flex:1;min-width:84px;max-width:140px}
-    .chip-sw{height:56px;border-radius:var(--radius);border:1px solid rgba(0,0,0,.35);position:relative}
-    .chip-sw.base{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
-    .chip-empty{height:56px;border-radius:var(--radius);border:1px dashed var(--border-gold);
-      display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:.62rem;
+    /* harmony groups laid out side by side to keep the modal short */
+    .harmony-groups{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+    .harmony-group-label{font-size:.82rem;color:var(--text-muted);font-style:italic;margin-bottom:.55rem}
+    .harmony-row{display:flex;gap:.5rem;flex-wrap:wrap}
+    .chip{flex:1;min-width:72px;max-width:120px}
+    .chip-sw{height:62px;border-radius:var(--radius);border:1px solid rgba(0,0,0,.35);position:relative}
+    .chip-empty{height:62px;border-radius:var(--radius);border:1px dashed var(--border-gold);
+      display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:.64rem;
       font-style:italic;text-align:center;padding:.2rem}
-    .chip-cap{font-size:.62rem;color:var(--text-muted);margin-top:.3rem;line-height:1.25}
-    .chip-cap .cn{display:block;color:var(--text);font-size:.66rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .chip-cap{font-size:.68rem;color:var(--text-muted);margin-top:.35rem;line-height:1.3}
+    .chip-cap .cn{display:block;color:var(--text);font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .chip-cap .ch{font-family:'Cinzel',serif;opacity:.65}
-    .chip-role{display:block;font-family:'Cinzel',serif;font-size:.54rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);opacity:.75;margin-bottom:.3rem}
+    .chip-role{display:block;font-family:'Cinzel',serif;font-size:.58rem;letter-spacing:.07em;text-transform:uppercase;color:var(--gold);opacity:.75;margin-bottom:.35rem}
+    @media(max-width:760px){
+      .modal{grid-template-columns:1fr;max-width:460px}
+      .modal-swatch{min-height:150px}
+      .modal-idblock{border-right:none}
+      .harmony-groups{grid-template-columns:1fr}
+    }
 
     @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
   </style>
@@ -609,8 +619,9 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
           <option value="code">Serial / code</option>
           <option value="owned">Owned first</option>
           <option value="wishlist">Wishlist first</option>
-          <option value="series" id="sort-series-opt" hidden>Series</option>
+          <option value="series" id="sort-series-opt" hidden>Series / Type</option>
         </select>
+        <select class="sort-select" id="series-filter" onchange="setSeriesFilter(this.value)" hidden></select>
       </div>
       <div class="count" id="pcount"></div>
       <div id="pcontent"></div>
@@ -790,7 +801,7 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
     //  OFFICINA PIGMENTI — paint catalogue + inventory
     // ══════════════════════════════════════════════
     const paintStore = { paints:[], inventory:new Map(), loaded:false, brands:[] }
-    let pQuery = '', pBrand = 'all', pOwn = 'all', pLimit = 120, opTab = 'catalogue', pSort = 'hue'
+    let pQuery = '', pBrand = 'all', pOwn = 'all', pLimit = 120, opTab = 'catalogue', pSort = 'hue', pSeries = 'all'
     const PAGE = 120
 
     // ── colour helpers ──
@@ -898,9 +909,9 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
       el.innerHTML = mk('all','All Brands') + paintStore.brands.map(b=>mk(b,b)).join('')
     }
     window.setBrand = (b)=>{
-      pBrand=b; pLimit=PAGE
+      pBrand=b; pLimit=PAGE; pSeries='all'
       document.querySelectorAll('#brand-segs .seg').forEach(s=>s.classList.toggle('active',s.dataset.brand===b))
-      // "Series" sort only meaningful within a single brand
+      // "Series / Type" sort only meaningful within a single brand
       const seriesOpt = document.getElementById('sort-series-opt')
       if(b==='all'){
         seriesOpt.hidden = true
@@ -908,9 +919,26 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
       } else {
         seriesOpt.hidden = false
       }
+      syncSeriesFilter()
       renderPaints()
     }
-    window.setSort = (s)=>{ pSort=s; pLimit=PAGE; renderPaints() }
+    window.setSort = (s)=>{ pSort=s; pLimit=PAGE; pSeries='all'; syncSeriesFilter(); renderPaints() }
+    window.setSeriesFilter = (v)=>{ pSeries=v; pLimit=PAGE; renderPaints() }
+
+    // show + populate the adjacent sub-filter when Series/Type sort is active within a brand
+    function syncSeriesFilter(){
+      const el = document.getElementById('series-filter')
+      const active = (pSort==='series' && pBrand!=='all')
+      if(!active){ el.hidden = true; return }
+      // distinct paint_set values for the current brand
+      const sets = [...new Set(
+        paintStore.paints.filter(p=>p.brand===pBrand).map(p=>p.paint_set).filter(Boolean)
+      )].sort((a,b)=>a.localeCompare(b))
+      el.innerHTML = `<option value="all">All series / types</option>` +
+        sets.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('')
+      el.value = pSeries
+      el.hidden = false
+    }
     window.setOwnFilter = (o)=>{ pOwn=o; pLimit=PAGE; document.querySelectorAll('#view-officina .controls .seg').forEach(s=>s.classList.toggle('active',s.dataset.own===o)); renderPaints() }
     window.onPaintSearch = ()=>{ pQuery = document.getElementById('pq').value.trim().toLowerCase(); pLimit=PAGE; renderPaints() }
 
@@ -921,6 +949,7 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
       const show = (t==='catalogue')
       document.getElementById('brand-segs').style.display = show?'flex':'none'
       document.getElementById('sort-bar').style.display = show?'flex':'none'
+      if(!show) document.getElementById('series-filter').hidden = true
       document.querySelector('#view-officina .controls').style.display = show?'block':'none'
       if(t==='catalogue'){ renderPaints() }
       else {
@@ -935,6 +964,7 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
     function filteredPaints(){
       return paintStore.paints.filter(p=>{
         if(pBrand!=='all' && p.brand!==pBrand) return false
+        if(pSeries!=='all' && p.paint_set!==pSeries) return false
         if(pOwn!=='all'){
           const st = paintStore.inventory.get(p.paint_id)
           if(st!==pOwn) return false
@@ -1088,16 +1118,20 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
       ].filter(Boolean).map(([k,v])=>`<span class="modal-spec"><b>${esc(k)}</b>${esc(v)}</span>`).join('')
 
       document.getElementById('paint-modal-inner').innerHTML = `
-        <div class="modal-swatch" style="background:${esc(p.hex)}">
-          <button class="modal-close" onclick="closeModal()" title="Close">✕</button>
-          <div class="modal-own">
-            <button class="own-btn ${st==='owned'?'on-owned':''}" onclick="toggleOwn(${p.paint_id},'owned')" title="Owned">✓</button>
-            <button class="own-btn ${st==='wishlist'?'on-wish':''}" onclick="toggleOwn(${p.paint_id},'wishlist')" title="Wishlist">★</button>
+        <div class="modal-left">
+          <div class="modal-swatch" style="background:${esc(p.hex)}">
+            <button class="modal-close" onclick="closeModal()" title="Close">✕</button>
+            <div class="modal-own">
+              <button class="own-btn ${st==='owned'?'on-owned':''}" onclick="toggleOwn(${p.paint_id},'owned')" title="Owned">✓</button>
+              <button class="own-btn ${st==='wishlist'?'on-wish':''}" onclick="toggleOwn(${p.paint_id},'wishlist')" title="Wishlist">★</button>
+            </div>
+          </div>
+          <div class="modal-idblock">
+            <div class="modal-name">${esc(p.paint_name)}</div>
+            <div class="modal-specs">${specs}</div>
           </div>
         </div>
         <div class="modal-body">
-          <div class="modal-name">${esc(p.paint_name)}</div>
-          <div class="modal-specs">${specs}</div>
           <div class="harmony-head">
             <span class="harmony-title">Colour Harmonies</span>
             <div class="harmony-toggles">
@@ -1111,9 +1145,11 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
               </div>
             </div>
           </div>
-          ${harmonyGroup('Analogous', H.analogous)}
-          ${harmonyGroup('Complementary', H.complementary)}
-          ${harmonyGroup('Triad', H.triad)}
+          <div class="harmony-groups">
+            ${harmonyGroup('Analogous', H.analogous)}
+            ${harmonyGroup('Complementary', H.complementary)}
+            ${harmonyGroup('Triad', H.triad)}
+          </div>
         </div>`
     }
 
