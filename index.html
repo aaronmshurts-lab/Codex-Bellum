@@ -162,7 +162,9 @@
       .crumb{display:none}
     }
     /* ── OFFICINA PIGMENTI · paint catalogue ── */
-    .paint-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.6rem;padding-bottom:3rem}
+    /* catalogue wants width — widen just this view's wrap, leave hub & Iura contained */
+    #view-officina .wrap{max-width:1680px}
+    .paint-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:.7rem;padding-bottom:3rem}
     .paint{position:relative;aspect-ratio:1/1;border:1px solid var(--border);border-radius:var(--radius);
       overflow:hidden;transition:border-color .18s,transform .1s;cursor:default}
     .paint:hover{border-color:var(--border-gold)}
@@ -202,6 +204,50 @@
     .load-more:hover{background:var(--gold-glow);color:var(--gold-bright)}
     .op-subtabs{display:flex;gap:.4rem;border-bottom:1px solid var(--border);margin-bottom:1.3rem;flex-wrap:wrap}
     .op-locked-note{font-size:.76rem;color:var(--text-muted);font-style:italic;padding:.4rem 0}
+
+    /* ── paint detail modal ── */
+    .modal-ov{position:fixed;inset:0;z-index:500;background:rgba(3,3,8,.78);backdrop-filter:blur(4px);
+      display:none;align-items:center;justify-content:center;padding:1.5rem}
+    .modal-ov.open{display:flex}
+    .modal{background:var(--card);border:1px solid var(--border-gold);border-radius:var(--radius);
+      width:100%;max-width:620px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+    .modal-swatch{height:160px;width:100%;position:relative;border-bottom:1px solid rgba(0,0,0,.4)}
+    .modal-close{position:absolute;top:.6rem;right:.7rem;width:2rem;height:2rem;border-radius:2px;
+      background:rgba(7,7,13,.6);border:1px solid rgba(255,255,255,.25);color:#e6dfd4;cursor:pointer;
+      font-size:1.1rem;line-height:1;backdrop-filter:blur(3px);transition:all .15s}
+    .modal-close:hover{border-color:var(--gold);color:#fff}
+    .modal-own{position:absolute;bottom:.6rem;right:.7rem;display:flex;gap:.4rem}
+    .modal-body{padding:1.3rem 1.4rem 1.6rem}
+    .modal-name{font-family:'Cinzel',serif;font-size:1.3rem;font-weight:700;color:var(--gold-bright);line-height:1.2}
+    .modal-brand{font-size:.95rem;color:var(--text);margin-top:.3rem}
+    .modal-specs{display:flex;flex-wrap:wrap;gap:.4rem .9rem;margin-top:.7rem;padding-bottom:1.1rem;
+      border-bottom:1px solid var(--border)}
+    .modal-spec{font-size:.82rem;color:var(--text-muted)}
+    .modal-spec b{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--gold);margin-right:.35rem}
+    .harmony-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.6rem;margin:1.2rem 0 .9rem}
+    .harmony-title{font-family:'Cinzel',serif;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+    .harmony-toggles{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap}
+    .htog{display:flex;gap:.25rem}
+    .htog button{font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.08em;text-transform:uppercase;
+      padding:.3rem .55rem;background:var(--surface);border:1px solid var(--border);color:var(--text-muted);
+      cursor:pointer;border-radius:2px;transition:all .15s;white-space:nowrap}
+    .htog button:hover:not(:disabled){color:var(--text);border-color:var(--border-gold)}
+    .htog button.active{color:var(--gold-bright);border-color:var(--border-gold);background:var(--gold-glow)}
+    .htog button:disabled{opacity:.3;cursor:not-allowed}
+    .harmony-group{margin-bottom:1.1rem}
+    .harmony-group-label{font-size:.72rem;color:var(--text-muted);font-style:italic;margin-bottom:.45rem}
+    .harmony-row{display:flex;gap:.55rem;flex-wrap:wrap}
+    .chip{flex:1;min-width:84px;max-width:140px}
+    .chip-sw{height:56px;border-radius:var(--radius);border:1px solid rgba(0,0,0,.35);position:relative}
+    .chip-sw.base{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+    .chip-empty{height:56px;border-radius:var(--radius);border:1px dashed var(--border-gold);
+      display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:.62rem;
+      font-style:italic;text-align:center;padding:.2rem}
+    .chip-cap{font-size:.62rem;color:var(--text-muted);margin-top:.3rem;line-height:1.25}
+    .chip-cap .cn{display:block;color:var(--text);font-size:.66rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .chip-cap .ch{font-family:'Cinzel',serif;opacity:.65}
+    .chip-role{display:block;font-family:'Cinzel',serif;font-size:.54rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);opacity:.75;margin-bottom:.3rem}
 
     @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
   </style>
@@ -571,6 +617,11 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
     </div>
   </div>
 
+  <!-- ══ PAINT DETAIL MODAL ══ -->
+  <div class="modal-ov" id="paint-modal" onclick="if(event.target===this)closeModal()">
+    <div class="modal" id="paint-modal-inner"></div>
+  </div>
+
   <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -766,6 +817,52 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
       if(p._hsl) return p._hsl
       const {r,g,b}=hexToRgb(p.hex); p._hsl=rgbToHsl(r,g,b); return p._hsl
     }
+    // ── Lab colour space (for perceptual nearest-match) ──
+    function rgbToLab(r,g,b){
+      // sRGB → linear → XYZ → Lab (D65)
+      let R=r/255,G=g/255,B=b/255
+      R=R>0.04045?Math.pow((R+0.055)/1.055,2.4):R/12.92
+      G=G>0.04045?Math.pow((G+0.055)/1.055,2.4):G/12.92
+      B=B>0.04045?Math.pow((B+0.055)/1.055,2.4):B/12.92
+      let X=(R*0.4124+G*0.3576+B*0.1805)/0.95047
+      let Y=(R*0.2126+G*0.7152+B*0.0722)/1.0
+      let Z=(R*0.0193+G*0.1192+B*0.9505)/1.08883
+      const f=t=>t>0.008856?Math.cbrt(t):(7.787*t+16/116)
+      const fx=f(X),fy=f(Y),fz=f(Z)
+      return { L:116*fy-16, a:500*(fx-fy), b:200*(fy-fz) }
+    }
+    function labOf(p){ if(p._lab) return p._lab; const {r,g,b}=hexToRgb(p.hex); p._lab=rgbToLab(r,g,b); return p._lab }
+    function deltaE(l1,l2){ const dL=l1.L-l2.L,da=l1.a-l2.a,db=l1.b-l2.b; return Math.sqrt(dL*dL+da*da+db*db) }
+    // HSL → hex (for pure-theory chips)
+    function hslToHex(h,s,l){
+      h=((h%360)+360)%360
+      const c=(1-Math.abs(2*l-1))*s, x=c*(1-Math.abs((h/60)%2-1)), m=l-c/2
+      let r,g,b
+      if(h<60){r=c;g=x;b=0}else if(h<120){r=x;g=c;b=0}else if(h<180){r=0;g=c;b=x}
+      else if(h<240){r=0;g=x;b=c}else if(h<300){r=x;g=0;b=c}else{r=c;g=0;b=x}
+      const to=v=>Math.round((v+m)*255).toString(16).padStart(2,'0')
+      return '#'+to(r)+to(g)+to(b)
+    }
+    // harmony targets from a base paint's HSL
+    function harmoniesFor(p){
+      const {h,s,l}=hsl(p)
+      return {
+        analogous: [ {role:'Analogous −30°', hex:hslToHex(h-30,s,l)}, {role:'Analogous +30°', hex:hslToHex(h+30,s,l)} ],
+        complementary: [ {role:'Complementary', hex:hslToHex(h+180,s,l)} ],
+        triad: [ {role:'Triad +120°', hex:hslToHex(h+120,s,l)}, {role:'Triad +240°', hex:hslToHex(h+240,s,l)} ]
+      }
+    }
+    // nearest catalogue paint to a target hex, by Lab ΔE; optional owned-only pool
+    function nearestPaint(targetHex, ownedOnly){
+      const {r,g,b}=hexToRgb(targetHex); const tl=rgbToLab(r,g,b)
+      let best=null, bestD=Infinity
+      for(const p of paintStore.paints){
+        if(ownedOnly && paintStore.inventory.get(p.paint_id)!=='owned') continue
+        const d=deltaE(tl, labOf(p))
+        if(d<bestD){ bestD=d; best=p }
+      }
+      return best
+    }
 
     async function loadPaints(){
       try {
@@ -895,17 +992,15 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
       const page = rows.slice(0, pLimit)
       const cards = page.map(p=>{
         const st = paintStore.inventory.get(p.paint_id)
-        const meta = [p.code, p.paint_set].filter(Boolean).join(' · ')
         const scrim = isLight(p.hex) ? 'light' : 'dark'
-        return `<div class="paint">
+        return `<div class="paint" onclick="openModal(${p.paint_id})">
           <div class="paint-swatch" style="background:${esc(p.hex)}" title="${esc(p.paint_name)} · ${esc(p.hex)}"></div>
-          <div class="paint-own">
+          <div class="paint-own" onclick="event.stopPropagation()">
             <button class="own-btn ${st==='owned'?'on-owned':''}" onclick="toggleOwn(${p.paint_id},'owned')" title="Owned">✓</button>
             <button class="own-btn ${st==='wishlist'?'on-wish':''}" onclick="toggleOwn(${p.paint_id},'wishlist')" title="Wishlist">★</button>
           </div>
           <div class="paint-label ${scrim}">
             <span class="paint-name" title="${esc(p.paint_name)}">${esc(p.paint_name)}</span>
-            <span class="paint-meta">${esc(p.brand)}${meta?' · '+esc(meta):''}</span>
           </div>
         </div>`
       }).join('')
@@ -932,10 +1027,98 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
           paintStore.inventory.set(paintId, status)
         }
         renderPaints()
+        if(modalPaintId!=null) renderModal()  // keep an open modal in sync
       } catch(e){
         alert('Could not save that mark — the inventory may be read-only.\n\n'+(e.message||e))
       }
     }
+
+    // ── paint detail modal ──
+    let modalPaintId = null, harmonyMode = 'theory', harmonyScope = 'all'
+
+    window.openModal = (paintId)=>{
+      modalPaintId = paintId
+      harmonyMode = 'theory'; harmonyScope = 'all'   // reset per open
+      renderModal()
+      document.getElementById('paint-modal').classList.add('open')
+    }
+    window.closeModal = ()=>{
+      document.getElementById('paint-modal').classList.remove('open')
+      modalPaintId = null
+    }
+    window.setHarmonyMode = (m)=>{ harmonyMode=m; renderModal() }
+    window.setHarmonyScope = (s)=>{ harmonyScope=s; renderModal() }
+
+    function chipHtml(role, hex, paint){
+      // paint === undefined → pure-theory chip; paint===null → no-match placeholder; else matched paint
+      if(paint===null){
+        return `<div class="chip"><span class="chip-role">${esc(role)}</span>
+          <div class="chip-empty">no owned match</div></div>`
+      }
+      const showHex = paint ? paint.hex : hex
+      const nameLine = paint
+        ? `<span class="cn" title="${esc(paint.paint_name)} · ${esc(paint.brand)}">${esc(paint.paint_name)}</span><span class="ch">${esc(paint.brand)}</span>`
+        : `<span class="ch">${esc(showHex)}</span>`
+      return `<div class="chip"><span class="chip-role">${esc(role)}</span>
+        <div class="chip-sw" style="background:${esc(showHex)}" title="${esc(showHex)}"></div>
+        <div class="chip-cap">${nameLine}</div></div>`
+    }
+
+    function harmonyGroup(label, targets){
+      const chips = targets.map(t=>{
+        if(harmonyMode==='theory') return chipHtml(t.role, t.hex, undefined)
+        const match = nearestPaint(t.hex, harmonyScope==='owned')
+        return chipHtml(t.role, t.hex, match||null)
+      }).join('')
+      return `<div class="harmony-group"><div class="harmony-group-label">${esc(label)}</div>
+        <div class="harmony-row">${chips}</div></div>`
+    }
+
+    function renderModal(){
+      const p = paintStore.paints.find(x=>x.paint_id===modalPaintId)
+      if(!p) return
+      const st = paintStore.inventory.get(p.paint_id)
+      const H = harmoniesFor(p)
+      const scopeDisabled = harmonyMode!=='catalog'
+      const specs = [
+        ['Brand', p.brand],
+        p.paint_set ? ['Series', p.paint_set] : null,
+        p.code ? ['No.', p.code] : null,
+        ['Hex', p.hex]
+      ].filter(Boolean).map(([k,v])=>`<span class="modal-spec"><b>${esc(k)}</b>${esc(v)}</span>`).join('')
+
+      document.getElementById('paint-modal-inner').innerHTML = `
+        <div class="modal-swatch" style="background:${esc(p.hex)}">
+          <button class="modal-close" onclick="closeModal()" title="Close">✕</button>
+          <div class="modal-own">
+            <button class="own-btn ${st==='owned'?'on-owned':''}" onclick="toggleOwn(${p.paint_id},'owned')" title="Owned">✓</button>
+            <button class="own-btn ${st==='wishlist'?'on-wish':''}" onclick="toggleOwn(${p.paint_id},'wishlist')" title="Wishlist">★</button>
+          </div>
+        </div>
+        <div class="modal-body">
+          <div class="modal-name">${esc(p.paint_name)}</div>
+          <div class="modal-specs">${specs}</div>
+          <div class="harmony-head">
+            <span class="harmony-title">Colour Harmonies</span>
+            <div class="harmony-toggles">
+              <div class="htog">
+                <button class="${harmonyMode==='theory'?'active':''}" onclick="setHarmonyMode('theory')">Pure Theory</button>
+                <button class="${harmonyMode==='catalog'?'active':''}" onclick="setHarmonyMode('catalog')">Catalog Colours</button>
+              </div>
+              <div class="htog">
+                <button class="${harmonyScope==='all'?'active':''}" onclick="setHarmonyScope('all')" ${scopeDisabled?'disabled':''}>All</button>
+                <button class="${harmonyScope==='owned'?'active':''}" onclick="setHarmonyScope('owned')" ${scopeDisabled?'disabled':''}>Owned Only</button>
+              </div>
+            </div>
+          </div>
+          ${harmonyGroup('Analogous', H.analogous)}
+          ${harmonyGroup('Complementary', H.complementary)}
+          ${harmonyGroup('Triad', H.triad)}
+        </div>`
+    }
+
+    // Esc closes the modal
+    document.addEventListener('keydown', e=>{ if(e.key==='Escape' && modalPaintId!=null) closeModal() })
 
     // ── boot ──
     document.getElementById('content').innerHTML = ''
