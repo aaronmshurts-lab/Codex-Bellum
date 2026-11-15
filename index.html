@@ -161,6 +161,33 @@
       .grid{grid-template-columns:1fr}
       .crumb{display:none}
     }
+    /* ── OFFICINA PIGMENTI · paint catalogue ── */
+    .paint-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:.7rem;padding-bottom:3rem}
+    .paint{display:flex;align-items:stretch;gap:0;background:var(--card);border:1px solid var(--border);
+      border-radius:var(--radius);overflow:hidden;transition:border-color .18s,background .18s;min-height:62px}
+    .paint:hover{border-color:var(--border-gold);background:var(--card-hover)}
+    .paint-swatch{width:54px;flex-shrink:0;border-right:1px solid rgba(0,0,0,.35)}
+    .paint-info{padding:.55rem .7rem;display:flex;flex-direction:column;justify-content:center;min-width:0;flex:1}
+    .paint-name{font-family:'Cinzel',serif;font-size:.82rem;font-weight:600;color:var(--gold-bright);
+      line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .paint-meta{font-size:.68rem;color:var(--text-muted);letter-spacing:.03em;margin-top:.15rem;
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .paint-meta .hex{font-family:'Cinzel',serif;opacity:.7}
+    .paint-own{display:flex;gap:.3rem;padding:.4rem .5rem .4rem 0;align-items:center}
+    .own-btn{font-family:'Cinzel',serif;font-size:.56rem;letter-spacing:.06em;text-transform:uppercase;
+      padding:.28rem .4rem;background:var(--surface);border:1px solid var(--border);color:var(--text-muted);
+      cursor:pointer;border-radius:2px;transition:all .15s;line-height:1;white-space:nowrap}
+    .own-btn:hover{color:var(--text);border-color:var(--border-gold)}
+    .own-btn.on-owned{color:#8fd19e;border-color:rgba(143,209,158,.5);background:rgba(143,209,158,.1)}
+    .own-btn.on-wish{color:var(--gold-bright);border-color:var(--border-gold);background:var(--gold-glow)}
+    .brand-segs{display:flex;flex-wrap:wrap;gap:.3rem;max-width:100%}
+    .load-more{display:block;margin:0 auto 3rem;font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.14em;
+      text-transform:uppercase;padding:.7rem 1.6rem;background:var(--surface);border:1px solid var(--border-gold);
+      color:var(--gold);cursor:pointer;border-radius:var(--radius);transition:all .18s}
+    .load-more:hover{background:var(--gold-glow);color:var(--gold-bright)}
+    .op-subtabs{display:flex;gap:.4rem;border-bottom:1px solid var(--border);margin-bottom:1.3rem;flex-wrap:wrap}
+    .op-locked-note{font-size:.76rem;color:var(--text-muted);font-style:italic;padding:.4rem 0}
+
     @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
   </style>
 </head>
@@ -444,13 +471,13 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
           <span class="en">The Muster · List Building</span>
           <span class="desc">Raise detachments, assign enhancements, tally points — verified against BattleForge.</span>
         </div>
-        <div class="spoke locked">
-          <span class="badge soon">To Come</span>
+        <button class="spoke" onclick="goOfficina()">
+          <span class="badge live">Live</span>
           <span class="ico">🎨</span>
           <span class="la">Officina Pigmenti</span>
           <span class="en">The Workshop · Inventory &amp; Paint</span>
-          <span class="desc">Track models, paint progress and QR-tagged bases across every crusade.</span>
-        </div>
+          <span class="desc">The paint catalogue — thousands of colours across the great manufactories, marked owned or sought.</span>
+        </button>
       </div>
     </div>
     <div class="hub-foot">
@@ -485,6 +512,39 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
     </div>
   </div>
 
+  <!-- ══ OFFICINA PIGMENTI VIEW ══ -->
+  <div class="view" id="view-officina">
+    <div class="spoke-head">
+      <div class="eyebrow">Codex Imperiator Bellum</div>
+      <h2>Officina Pigmenti</h2>
+      <p class="sub">The Workshop — the paint catalogue of the great manufactories.</p>
+    </div>
+    <div class="controls">
+      <div class="wrap controls-inner">
+        <div class="search">
+          <span class="si">⌕</span>
+          <input id="pq" type="text" placeholder="Search paints — name or brand…" oninput="onPaintSearch()" autocomplete="off">
+        </div>
+        <div class="segs">
+          <button class="seg active" data-own="all" onclick="setOwnFilter('all')">All</button>
+          <button class="seg" data-own="owned" onclick="setOwnFilter('owned')">Owned</button>
+          <button class="seg" data-own="wishlist" onclick="setOwnFilter('wishlist')">Wishlist</button>
+        </div>
+      </div>
+    </div>
+    <div class="wrap">
+      <div class="op-subtabs">
+        <button class="tab active" data-optab="catalogue" onclick="setOpTab('catalogue')">Catalogue <span class="ct" id="ct-paint"></span></button>
+        <button class="tab" data-optab="recipes" onclick="setOpTab('recipes')">Recipes</button>
+        <button class="tab" data-optab="tutorials" onclick="setOpTab('tutorials')">Tutorials</button>
+        <button class="tab" data-optab="sketch" onclick="setOpTab('sketch')">Sketch</button>
+      </div>
+      <div class="brand-segs" id="brand-segs" style="margin-bottom:1.1rem"></div>
+      <div class="count" id="pcount"></div>
+      <div id="pcontent"></div>
+    </div>
+  </div>
+
   <script type="module">
     import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
@@ -505,10 +565,11 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
     const USED_IN_LABEL = { 'your turn':'Your turn', 'opponent turn':"Opponent's turn", 'either':'Either turn' }
 
     // ── routing ──
-    const views = { hub:document.getElementById('view-hub'), iura:document.getElementById('view-iura') }
+    const views = { hub:document.getElementById('view-hub'), iura:document.getElementById('view-iura'), officina:document.getElementById('view-officina') }
     function show(v){ Object.values(views).forEach(el=>el.classList.remove('active')); views[v].classList.add('active'); window.scrollTo(0,0) }
     window.goHub = ()=>{ show('hub'); setCrumb(''); history.replaceState({},'','#') }
     window.goIura = async ()=>{ show('iura'); setCrumb('Iura Belli'); history.replaceState({},'','#iura'); if(!store.loaded) await loadAll(); render() }
+    window.goOfficina = async ()=>{ show('officina'); setCrumb('Officina Pigmenti'); history.replaceState({},'','#officina'); if(!paintStore.loaded) await loadPaints(); renderPaints() }
     function setCrumb(t){ document.getElementById('crumb').innerHTML = t ? `<b>${t}</b>` : '' }
 
     // ── data load ──
@@ -648,11 +709,139 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
         <span style="font-size:.85rem;opacity:.7">Try a different term, or clear the filter.</span></div>`
     }
 
+    // ══════════════════════════════════════════════
+    //  OFFICINA PIGMENTI — paint catalogue + inventory
+    // ══════════════════════════════════════════════
+    const paintStore = { paints:[], inventory:new Map(), loaded:false, brands:[] }
+    let pQuery = '', pBrand = 'all', pOwn = 'all', pLimit = 120, opTab = 'catalogue'
+    const PAGE = 120
+
+    async function loadPaints(){
+      try {
+        // paginate the catalogue read (Supabase caps at 1000 rows/request)
+        let all = [], from = 0, step = 1000
+        while(true){
+          const { data, error } = await supabase
+            .from('bellum_paints').select('paint_id,brand,paint_name,code,paint_set,hex,source')
+            .eq('is_current',true).order('brand').order('paint_name').range(from, from+step-1)
+          if(error) throw error
+          all = all.concat(data||[])
+          if(!data || data.length < step) break
+          from += step
+        }
+        paintStore.paints = all
+        paintStore.brands = [...new Set(all.map(p=>p.brand))].sort()
+        // inventory overlay
+        const { data:inv, error:ierr } = await supabase
+          .from('bellum_paint_inventory').select('paint_id,status')
+        if(!ierr && inv){ inv.forEach(r=>paintStore.inventory.set(r.paint_id, r.status)) }
+        paintStore.loaded = true
+        document.getElementById('ct-paint').textContent = all.length
+        buildBrandSegs()
+      } catch(e){
+        document.getElementById('pcontent').innerHTML =
+          `<div class="state err"><span class="ico">⚠</span>The workshop could not be reached.<br><span style="font-size:.82rem;opacity:.7">${(e.message||e)}</span></div>`
+      }
+    }
+
+    function buildBrandSegs(){
+      const el = document.getElementById('brand-segs')
+      const mk = (v,l)=>`<button class="seg ${v===pBrand?'active':''}" data-brand="${esc(v)}" onclick="setBrand('${esc(v).replace(/'/g,"\\'")}')">${esc(l)}</button>`
+      el.innerHTML = mk('all','All Brands') + paintStore.brands.map(b=>mk(b,b)).join('')
+    }
+    window.setBrand = (b)=>{ pBrand=b; pLimit=PAGE; document.querySelectorAll('#brand-segs .seg').forEach(s=>s.classList.toggle('active',s.dataset.brand===b)); renderPaints() }
+    window.setOwnFilter = (o)=>{ pOwn=o; pLimit=PAGE; document.querySelectorAll('#view-officina .controls .seg').forEach(s=>s.classList.toggle('active',s.dataset.own===o)); renderPaints() }
+    window.onPaintSearch = ()=>{ pQuery = document.getElementById('pq').value.trim().toLowerCase(); pLimit=PAGE; renderPaints() }
+
+    window.setOpTab = (t)=>{
+      opTab=t
+      document.querySelectorAll('#view-officina .op-subtabs .tab').forEach(x=>x.classList.toggle('active',x.dataset.optab===t))
+      // brand/own controls only apply to the catalogue
+      const show = (t==='catalogue')
+      document.getElementById('brand-segs').style.display = show?'flex':'none'
+      document.querySelector('#view-officina .controls').style.display = show?'block':'none'
+      if(t==='catalogue'){ renderPaints() }
+      else {
+        const labels = { recipes:'Recipes', tutorials:'Tutorials', sketch:'the Sketch workbench' }
+        document.getElementById('pcount').textContent = ''
+        document.getElementById('pcontent').innerHTML =
+          `<div class="state"><span class="ico">🜂</span>${labels[t]} — not yet consecrated.<br>
+           <span class="op-locked-note">This chapter of the Workshop is still being written.</span></div>`
+      }
+    }
+
+    function filteredPaints(){
+      return paintStore.paints.filter(p=>{
+        if(pBrand!=='all' && p.brand!==pBrand) return false
+        if(pOwn!=='all'){
+          const st = paintStore.inventory.get(p.paint_id)
+          if(st!==pOwn) return false
+        }
+        if(pQuery){
+          const hay = (p.paint_name+' '+p.brand+' '+(p.code||'')).toLowerCase()
+          if(!hay.includes(pQuery)) return false
+        }
+        return true
+      })
+    }
+
+    function renderPaints(){
+      if(opTab!=='catalogue') return
+      const rows = filteredPaints()
+      const cnt = document.getElementById('pcount')
+      cnt.textContent = `${rows.length.toLocaleString()} ${rows.length===1?'paint':'paints'} shown`
+      const c = document.getElementById('pcontent')
+      if(!rows.length){ c.innerHTML = `<div class="state"><span class="ico">⌕</span>No paint answers to that search.</div>`; return }
+      const page = rows.slice(0, pLimit)
+      const cards = page.map(p=>{
+        const st = paintStore.inventory.get(p.paint_id)
+        const meta = [p.code, p.paint_set].filter(Boolean).join(' · ')
+        return `<div class="paint">
+          <div class="paint-swatch" style="background:${esc(p.hex)}" title="${esc(p.hex)}"></div>
+          <div class="paint-info">
+            <span class="paint-name" title="${esc(p.paint_name)}">${esc(p.paint_name)}</span>
+            <span class="paint-meta">${esc(p.brand)}${meta?' · '+esc(meta):''} · <span class="hex">${esc(p.hex)}</span></span>
+          </div>
+          <div class="paint-own">
+            <button class="own-btn ${st==='owned'?'on-owned':''}" onclick="toggleOwn(${p.paint_id},'owned')" title="Owned">✓</button>
+            <button class="own-btn ${st==='wishlist'?'on-wish':''}" onclick="toggleOwn(${p.paint_id},'wishlist')" title="Wishlist">★</button>
+          </div>
+        </div>`
+      }).join('')
+      const more = rows.length>pLimit
+        ? `<button class="load-more" onclick="showMore()">Reveal more · ${(rows.length-pLimit).toLocaleString()} remain</button>` : ''
+      c.innerHTML = `<div class="paint-grid">${cards}</div>${more}`
+    }
+    window.showMore = ()=>{ pLimit += PAGE*2; renderPaints() }
+
+    // ── ownership toggle (writes to bellum_paint_inventory) ──
+    window.toggleOwn = async (paintId, status)=>{
+      const cur = paintStore.inventory.get(paintId)
+      try {
+        if(cur===status){
+          // toggling off → remove the row
+          const { error } = await supabase.from('bellum_paint_inventory').delete().eq('paint_id',paintId)
+          if(error) throw error
+          paintStore.inventory.delete(paintId)
+        } else {
+          // upsert the new status (unique index on paint_id makes this a replace)
+          const { error } = await supabase.from('bellum_paint_inventory')
+            .upsert({ paint_id:paintId, status, updated_at:new Date().toISOString() }, { onConflict:'paint_id' })
+          if(error) throw error
+          paintStore.inventory.set(paintId, status)
+        }
+        renderPaints()
+      } catch(e){
+        alert('Could not save that mark — the inventory may be read-only.\n\n'+(e.message||e))
+      }
+    }
+
     // ── boot ──
     document.getElementById('content').innerHTML = ''
     loadVersionForHub()
     // deep-link support
     if(location.hash==='#iura'){ goIura() }
+    else if(location.hash==='#officina'){ goOfficina() }
   </script>
 </body>
 </html>
