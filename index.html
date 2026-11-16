@@ -99,11 +99,14 @@
     .search input:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-glow)}
     .search .si{position:absolute;left:.85rem;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:.95rem}
     .segs{display:flex;gap:.35rem}
-    .seg{font-family:'Cinzel',serif;font-size:.64rem;letter-spacing:.12em;text-transform:uppercase;
-      padding:.55rem .9rem;background:var(--surface);border:1px solid var(--border);color:var(--text-muted);
+    .seg{font-family:'Cinzel',serif;font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;
+      padding:.58rem .95rem;background:var(--surface);border:1px solid var(--border);color:var(--text);
       cursor:pointer;border-radius:var(--radius);transition:all .18s;white-space:nowrap}
-    .seg:hover{color:var(--text);border-color:var(--border-gold)}
+    .seg:hover{color:var(--gold-bright);border-color:var(--border-gold)}
     .seg.active{color:var(--gold-bright);border-color:var(--border-gold);background:var(--gold-glow)}
+    /* brand pills carrying a logo */
+    .seg.brand-logo{padding:.4rem .6rem;display:inline-flex;align-items:center}
+    .seg.brand-logo img{height:26px;width:auto;display:block;border-radius:3px}
 
     .tabs{display:flex;gap:.4rem;border-bottom:1px solid var(--border);margin-bottom:1.5rem}
     .tab{font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
@@ -194,7 +197,7 @@
     .own-btn.on-wish{color:var(--gold-bright);border-color:var(--gold);background:rgba(40,32,8,.8)}
     .brand-segs{display:flex;flex-wrap:wrap;gap:.3rem;max-width:100%}
     .sort-bar{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.1rem}
-    .sort-label{font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted)}
+    .sort-label{font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text)}
     .sort-select{font-family:'EB Garamond',serif;font-size:.9rem;padding:.4rem .7rem;background:var(--surface);
       border:1px solid var(--border);color:var(--text);border-radius:var(--radius);cursor:pointer;outline:none}
     .sort-select:focus{border-color:var(--gold)}
@@ -813,7 +816,7 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
     // ══════════════════════════════════════════════
     //  OFFICINA PIGMENTI — paint catalogue + inventory
     // ══════════════════════════════════════════════
-    const paintStore = { paints:[], inventory:new Map(), notes:new Map(), loaded:false, brands:[] }
+    const paintStore = { paints:[], inventory:new Map(), notes:new Map(), logos:new Map(), loaded:false, brands:[] }
     let pQuery = '', pBrand = 'all', pOwn = 'all', pLimit = 120, opTab = 'catalogue', pSort = 'hue', pSeries = 'all'
     const PAGE = 120
 
@@ -912,6 +915,10 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
           if(r.status) paintStore.inventory.set(r.paint_id, r.status)
           if(r.notes) paintStore.notes.set(r.paint_id, r.notes)
         }) }
+        // brand logos (tone-matched plates stored as data-URIs)
+        const { data:br, error:berr } = await supabase
+          .from('bellum_paint_brands').select('brand,logo')
+        if(!berr && br){ br.forEach(r=>{ if(r.logo) paintStore.logos.set(r.brand, r.logo) }) }
         paintStore.loaded = true
         document.getElementById('ct-paint').textContent = all.length
         buildBrandSegs()
@@ -923,8 +930,15 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
 
     function buildBrandSegs(){
       const el = document.getElementById('brand-segs')
-      const mk = (v,l)=>`<button class="seg ${v===pBrand?'active':''}" data-brand="${esc(v)}" onclick="setBrand('${esc(v).replace(/'/g,"\\'")}')">${esc(l)}</button>`
-      el.innerHTML = mk('all','All Brands') + paintStore.brands.map(b=>mk(b,b)).join('')
+      const onclk = (v)=>`onclick="setBrand('${esc(v).replace(/'/g,"\\'")}')"`
+      // text pill (All Brands, and any brand lacking a logo)
+      const textPill = (v,l)=>`<button class="seg ${v===pBrand?'active':''}" data-brand="${esc(v)}" ${onclk(v)}>${esc(l)}</button>`
+      // logo pill (brand name on hover via title)
+      const logoPill = (v,uri)=>`<button class="seg brand-logo ${v===pBrand?'active':''}" data-brand="${esc(v)}" ${onclk(v)} title="${esc(v)}"><img src="${esc(uri)}" alt="${esc(v)}"></button>`
+      el.innerHTML = textPill('all','All Brands') + paintStore.brands.map(b=>{
+        const uri = paintStore.logos.get(b)
+        return uri ? logoPill(b,uri) : textPill(b,b)
+      }).join('')
     }
     window.setBrand = (b)=>{
       pBrand=b; pLimit=PAGE; pSeries='all'
