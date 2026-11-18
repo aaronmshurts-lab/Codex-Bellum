@@ -245,24 +245,24 @@
     .harmony-toggles{display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
     .htog{display:flex;gap:.3rem}
     .htog button{font-family:'Cinzel',serif;font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;
-      padding:.4rem .7rem;background:var(--surface);border:1px solid var(--border);color:var(--text-muted);
+      padding:.4rem .7rem;background:var(--surface);border:1px solid var(--border-gold);color:var(--gold);
       cursor:pointer;border-radius:2px;transition:all .15s;white-space:nowrap}
-    .htog button:hover:not(:disabled){color:var(--text);border-color:var(--border-gold)}
-    .htog button.active{color:var(--gold-bright);border-color:var(--border-gold);background:var(--gold-glow)}
-    .htog button:disabled{opacity:.3;cursor:not-allowed}
+    .htog button:hover:not(:disabled){color:var(--gold-bright);border-color:var(--gold)}
+    .htog button.active{color:var(--gold-bright);border-color:var(--gold);background:var(--gold-glow)}
+    .htog button:disabled{opacity:.55;cursor:not-allowed}
     /* harmony groups laid out side by side to keep the modal short */
     .harmony-groups{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
     .harmony-group-label{font-size:.9rem;color:var(--text);font-style:italic;margin-bottom:.55rem;text-align:center}
-    .harmony-row{display:flex;gap:.5rem;flex-wrap:wrap}
-    .chip{flex:1;min-width:72px;max-width:120px}
-    .chip-sw{height:62px;border-radius:var(--radius);border:1px solid rgba(0,0,0,.35);position:relative}
-    .chip-empty{height:62px;border-radius:var(--radius);border:1px dashed var(--border-gold);
+    .harmony-row{display:flex;gap:.6rem;flex-wrap:nowrap;justify-content:center;align-items:flex-end}
+    .chip{flex:0 0 auto;width:92px}
+    .chip-sw{height:72px;border-radius:var(--radius);border:1px solid rgba(0,0,0,.35);position:relative}
+    .chip-empty{height:72px;border-radius:var(--radius);border:1px dashed var(--border-gold);
       display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:.64rem;
       font-style:italic;text-align:center;padding:.2rem}
     .chip-cap{font-size:.82rem;color:var(--text);margin-top:.4rem;line-height:1.35;text-align:center}
     .chip-cap .cn{display:block;color:var(--text);font-size:.85rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .chip-cap .ch{display:block;font-family:'Cinzel',serif;color:var(--text);font-size:.78rem;letter-spacing:.02em}
-    .chip-role{display:block;font-family:'Cinzel',serif;font-size:.64rem;letter-spacing:.07em;text-transform:uppercase;color:var(--gold-bright);opacity:1;margin-bottom:.35rem;text-align:center}
+    .chip-role{display:flex;align-items:flex-end;justify-content:center;min-height:2.6em;line-height:1.15;font-family:'Cinzel',serif;font-size:.64rem;letter-spacing:.07em;text-transform:uppercase;color:var(--gold-bright);opacity:1;margin-bottom:.35rem;text-align:center}
     /* notes section (fills the space below the harmonies) */
     .modal-notes{margin-top:1.4rem;border-top:1px solid var(--border);padding-top:1.1rem}
     .notes-head{display:flex;align-items:center;justify-content:space-between;gap:.6rem;margin-bottom:.6rem}
@@ -1195,7 +1195,7 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
         const match = nearestPaint(t.hex, harmonyScope==='owned', brandLimit)
         return chipHtml(t.role, t.hex, match||null)
       }).join('')
-      return `<div class="harmony-group"><div class="harmony-group-label">${esc(label)}</div>
+      return `<div class="harmony-group">
         <div class="harmony-row">${chips}</div></div>`
     }
 
