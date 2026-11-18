@@ -164,8 +164,8 @@
       .grid{grid-template-columns:1fr}
       .crumb{display:none}
     }
-    /* ── OFFICINA PIGMENTI · paint catalogue ── */
-    /* catalogue wants width — widen just this view's wrap, leave hub & Iura contained */
+    /* ── OFFICINA PIGMENTI · paint catalog ── */
+    /* catalog wants width — widen just this view's wrap, leave hub & Iura contained */
     #view-officina .wrap{max-width:1680px}
     .paint-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:.7rem;padding-bottom:3rem}
     .paint{position:relative;aspect-ratio:1/1;border:1px solid var(--border);border-radius:var(--radius);
@@ -173,7 +173,12 @@
     .paint:hover{border-color:var(--border-gold)}
     .paint:hover .paint-own{opacity:1}
     .paint-swatch{position:absolute;inset:0}
-    /* bottom scrim carries the label; gradient makes text read on ANY swatch colour */
+    /* series/type letter badge, top-left */
+    .paint-badge{position:absolute;top:.45rem;left:.45rem;z-index:2;width:1.6rem;height:1.6rem;
+      display:flex;align-items:center;justify-content:center;font-family:'Cinzel',serif;font-weight:700;
+      font-size:.78rem;color:#fff;background:rgba(7,7,13,.9);border:1.5px solid rgba(255,255,255,.5);
+      border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.45);line-height:1}
+    /* bottom scrim carries the label; gradient makes text read on ANY swatch color */
     .paint-label{position:absolute;left:0;right:0;bottom:0;padding:.75rem .6rem .5rem;
       display:flex;flex-direction:column;gap:.1rem;pointer-events:none}
     .paint-label.dark{background:linear-gradient(to top,rgba(7,7,13,.92) 0%,rgba(7,7,13,.7) 55%,transparent 100%)}
@@ -188,13 +193,16 @@
     .paint-label.light .paint-name{color:#1a160c}
     .paint-label.light .paint-meta{color:#5a5340}
     /* owner controls, top-right overlay */
-    .paint-own{position:absolute;top:.45rem;right:.45rem;display:flex;gap:.3rem;opacity:.85;transition:opacity .18s;z-index:2}
-    .own-btn{font-size:.72rem;width:1.6rem;height:1.6rem;display:flex;align-items:center;justify-content:center;
-      background:rgba(7,7,13,.62);border:1px solid rgba(255,255,255,.22);color:#d8d2c4;backdrop-filter:blur(3px);
-      cursor:pointer;border-radius:2px;transition:all .15s;line-height:1;padding:0}
-    .own-btn:hover{border-color:var(--gold);color:#fff}
-    .own-btn.on-owned{color:#8fd19e;border-color:#8fd19e;background:rgba(10,30,16,.8)}
-    .own-btn.on-wish{color:var(--gold-bright);border-color:var(--gold);background:rgba(40,32,8,.8)}
+    .paint-own{position:absolute;top:.45rem;right:.45rem;display:flex;gap:.35rem;opacity:1;transition:opacity .18s;z-index:2}
+    /* solid dark chips with a bright ring so they read on ANY swatch color, light or dark */
+    .own-btn{font-size:.85rem;font-weight:700;width:1.8rem;height:1.8rem;display:flex;align-items:center;justify-content:center;
+      background:rgba(7,7,13,.9);border:1.5px solid rgba(255,255,255,.55);color:#fff;
+      cursor:pointer;border-radius:4px;transition:all .15s;line-height:1;padding:0;
+      box-shadow:0 1px 4px rgba(0,0,0,.45)}
+    .own-btn:hover{border-color:var(--gold-bright);background:#000;transform:scale(1.08)}
+    /* marked states: filled, saturated, unmistakable */
+    .own-btn.on-owned{color:#0a1e10;border-color:#8fd19e;background:#8fd19e;box-shadow:0 1px 5px rgba(0,0,0,.5)}
+    .own-btn.on-wish{color:#2a2008;border-color:var(--gold-bright);background:var(--gold-bright);box-shadow:0 1px 5px rgba(0,0,0,.5)}
     .brand-segs{display:flex;flex-wrap:wrap;gap:.3rem;max-width:100%}
     .sort-bar{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin-bottom:1.1rem}
     .sort-label{font-family:'Cinzel',serif;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text)}
@@ -244,7 +252,7 @@
     .htog button:disabled{opacity:.3;cursor:not-allowed}
     /* harmony groups laid out side by side to keep the modal short */
     .harmony-groups{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
-    .harmony-group-label{font-size:.82rem;color:var(--text-muted);font-style:italic;margin-bottom:.55rem}
+    .harmony-group-label{font-size:.82rem;color:var(--text-muted);font-style:italic;margin-bottom:.55rem;text-align:center}
     .harmony-row{display:flex;gap:.5rem;flex-wrap:wrap}
     .chip{flex:1;min-width:72px;max-width:120px}
     .chip-sw{height:62px;border-radius:var(--radius);border:1px solid rgba(0,0,0,.35);position:relative}
@@ -534,7 +542,7 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
           <span class="ico">📖</span>
           <span class="la">Sanctum Librorum</span>
           <span class="en">The Library</span>
-          <span class="desc">The Black Library catalogue — every tome tracked, owned, read and sought. Opens in the archive proper.</span>
+          <span class="desc">The Black Library catalog — every tome tracked, owned, read and sought. Opens in the archive proper.</span>
         </a>
         <!-- LOCKED spokes -->
         <div class="spoke locked">
@@ -563,7 +571,7 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
           <span class="ico">🎨</span>
           <span class="la">Officina Pigmenti</span>
           <span class="en">The Workshop · Inventory &amp; Paint</span>
-          <span class="desc">The paint catalogue — thousands of colours across the great manufactories, marked owned or sought.</span>
+          <span class="desc">The paint catalog — thousands of colors across the great manufactories, marked owned or sought.</span>
         </button>
       </div>
     </div>
@@ -604,7 +612,7 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
     <div class="spoke-head">
       <div class="eyebrow">Codex Imperiator Bellum</div>
       <h2>Officina Pigmenti</h2>
-      <p class="sub">The Workshop — the paint catalogue of the great manufactories.</p>
+      <p class="sub">The Workshop — the paint catalog of the great manufactories.</p>
     </div>
     <div class="controls">
       <div class="wrap controls-inner">
@@ -621,7 +629,7 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
     </div>
     <div class="wrap">
       <div class="op-subtabs">
-        <button class="tab active" data-optab="catalogue" onclick="setOpTab('catalogue')">Catalogue <span class="ct" id="ct-paint"></span></button>
+        <button class="tab active" data-optab="catalogue" onclick="setOpTab('catalogue')">Catalog <span class="ct" id="ct-paint"></span></button>
         <button class="tab" data-optab="recipes" onclick="setOpTab('recipes')">Recipes</button>
         <button class="tab" data-optab="tutorials" onclick="setOpTab('tutorials')">Tutorials</button>
         <button class="tab" data-optab="sketch" onclick="setOpTab('sketch')">Sketch</button>
@@ -630,7 +638,7 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
       <div class="sort-bar" id="sort-bar">
         <span class="sort-label">Sort</span>
         <select class="sort-select" id="sort-select" onchange="setSort(this.value)">
-          <option value="hue">Colour (by hue)</option>
+          <option value="hue">Color (by hue)</option>
           <option value="name">Name (A–Z)</option>
           <option value="code">Serial / code</option>
           <option value="owned">Owned first</option>
@@ -820,7 +828,7 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
     let pQuery = '', pBrand = 'all', pOwn = 'all', pLimit = 120, opTab = 'catalogue', pSort = 'hue', pSeries = 'all'
     const PAGE = 120
 
-    // ── colour helpers ──
+    // ── color helpers ──
     function hexToRgb(hex){
       const h = (hex||'').replace('#',''); if(h.length!==6) return {r:0,g:0,b:0}
       return { r:parseInt(h.slice(0,2),16), g:parseInt(h.slice(2,4),16), b:parseInt(h.slice(4,6),16) }
@@ -839,12 +847,31 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
       const L=(0.299*r+0.587*g+0.114*b)/255
       return L>0.6
     }
+    // map a paint_set / type name to a single corner letter (keyword-based, case-insensitive).
+    // Returns '' for sets that don't match a known functional type (no badge shown).
+    function setLetter(set){
+      if(!set) return ''
+      const s = set.toLowerCase()
+      // order matters: check more specific words first
+      if(/\bcontrast\b|\bspeedpaint|\bspeed paint|\bxpress|\bextreme ?pressure/.test(s)) return 'C'
+      if(/\bwash\b|\bshade\b|\bink\b/.test(s)) return 'W'
+      if(/\bdry\b|drybrush/.test(s)) return 'D'
+      if(/\blayer\b/.test(s)) return 'L'
+      if(/\bbase\b|\bbasecoat/.test(s)) return 'B'
+      if(/\bair\b/.test(s)) return 'A'
+      if(/\bmetallic?\b|\bmetal\b/.test(s)) return 'M'
+      if(/\btechnical\b|\btexture\b/.test(s)) return 'T'
+      if(/\bprimer\b|surface primer/.test(s)) return 'P'
+      if(/\bglaze\b/.test(s)) return 'G'
+      if(/\bfluoresc|\bfluo\b/.test(s)) return 'F'
+      return ''
+    }
     // cache hue/sat/lum per paint on first use
     function hsl(p){
       if(p._hsl) return p._hsl
       const {r,g,b}=hexToRgb(p.hex); p._hsl=rgbToHsl(r,g,b); return p._hsl
     }
-    // ── Lab colour space (for perceptual nearest-match) ──
+    // ── Lab color space (for perceptual nearest-match) ──
     function rgbToLab(r,g,b){
       // sRGB → linear → XYZ → Lab (D65)
       let R=r/255,G=g/255,B=b/255
@@ -1031,8 +1058,8 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
           arr.sort((a,b)=>((inv.get(b.paint_id)==='wishlist')-(inv.get(a.paint_id)==='wishlist')) || byName(a,b)); break
         case 'hue':
         default:
-          // near-greys (very low saturation) sink to the end, sorted by lightness;
-          // chromatic colours sort by hue, then lightness
+          // near-grays (very low saturation) sink to the end, sorted by lightness;
+          // chromatic colors sort by hue, then lightness
           arr.sort((a,b)=>{
             const A=hsl(a), B=hsl(b)
             const ag=A.s<0.12, bg=B.s<0.12
@@ -1055,8 +1082,11 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
       const cards = page.map(p=>{
         const st = paintStore.inventory.get(p.paint_id)
         const scrim = isLight(p.hex) ? 'light' : 'dark'
+        const letter = setLetter(p.paint_set)
+        const badge = letter ? `<div class="paint-badge" title="${esc(p.paint_set)}">${esc(letter)}</div>` : ''
         return `<div class="paint" onclick="openModal(${p.paint_id})">
           <div class="paint-swatch" style="background:${esc(p.hex)}" title="${esc(p.paint_name)} · ${esc(p.hex)}"></div>
+          ${badge}
           <div class="paint-own" onclick="event.stopPropagation()">
             <button class="own-btn ${st==='owned'?'on-owned':''}" onclick="toggleOwn(${p.paint_id},'owned')" title="Owned">✓</button>
             <button class="own-btn ${st==='wishlist'?'on-wish':''}" onclick="toggleOwn(${p.paint_id},'wishlist')" title="Wishlist">★</button>
@@ -1201,11 +1231,11 @@ l423 538 -49 52 c-26 29 -165 179 -307 335 -142 155 -260 282 -261 282 -1 0
         </div>
         <div class="modal-body">
           <div class="harmony-head">
-            <span class="harmony-title">Colour Harmonies</span>
+            <span class="harmony-title">Color Harmonies</span>
             <div class="harmony-toggles">
               <div class="htog">
                 <button class="${harmonyMode==='theory'?'active':''}" onclick="setHarmonyMode('theory')">Pure Theory</button>
-                <button class="${harmonyMode==='catalog'?'active':''}" onclick="setHarmonyMode('catalog')">Catalog Colours</button>
+                <button class="${harmonyMode==='catalog'?'active':''}" onclick="setHarmonyMode('catalog')">Catalog Colors</button>
               </div>
               <div class="htog">
                 <button class="${harmonyScope==='all'?'active':''}" onclick="setHarmonyScope('all')" ${catDisabled?'disabled':''}>All</button>
